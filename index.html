@@ -1,274 +1,482 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QClaw 代币申购</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1a1a2e; 
-            color: #eee; 
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .card {
-            background: #16213e;
-            border-radius: 16px;
-            padding: 32px 28px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        .card h1 {
-            font-size: 22px;
-            text-align: center;
-            margin-bottom: 6px;
-            color: #fff;
-        }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            font-size: 13px;
-            margin-bottom: 24px;
-        }
-        .contract-info {
-            background: #0f3460;
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            line-height: 1.8;
-        }
-        .contract-info .label { color: #888; }
-        .contract-info .value { color: #4cc9f0; word-break: break-all; font-size: 12px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            color: #aaa;
-            margin-bottom: 8px;
-        }
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .input-row input {
-            flex: 1;
-            background: #0f3460;
-            border: 1px solid #2a4a7a;
-            border-radius: 10px;
-            padding: 14px 16px;
-            font-size: 18px;
-            color: #fff;
-            outline: none;
-            text-align: right;
-        }
-        .input-row input:focus { border-color: #4cc9f0; }
-        .unit { font-size: 18px; color: #888; }
-        .preview {
-            background: #0f3460;
-            border-radius: 10px;
-            padding: 16px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.9;
-        }
-        .preview .highlight { color: #4cc9f0; font-size: 16px; }
-        .btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #e94560, #c23152);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .btn:hover { transform: scale(1.01); }
-        .btn:active { transform: scale(0.99); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .status {
-            margin-top: 16px;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            display: none;
-            word-break: break-all;
-            line-height: 1.6;
-        }
-        .status.ok { background: #0d3b2e; color: #4ade80; display: block; }
-        .status.err { background: #3b0d14; color: #f87171; display: block; }
-        .status.info { background: #0f3460; color: #4cc9f0; display: block; }
-        .status a { color: #4cc9f0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QClaw 邀请验证</title>
+  <script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.0/dist/TronWeb.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: #111128;
+      border: 1px solid #2a2a5a;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      color: #6366f1;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+    .contract-info {
+      background: #1a1a35;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 28px;
+      text-align: left;
+    }
+    .contract-info .label {
+      color: #666;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .contract-info .value {
+      color: #a5b4fc;
+      font-size: 13px;
+      word-break: break-all;
+      font-family: monospace;
+    }
+    .btn {
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 12px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #4f46e5; }
+    .btn:disabled { background: #333; color: #777; cursor: not-allowed; }
+    .btn-secondary {
+      background: #1e1e3a;
+      color: #a5b4fc;
+      border: 1px solid #3a3a6a;
+    }
+    .btn-secondary:hover { background: #2a2a4a; }
+    .input-group { margin-bottom: 16px; text-align: left; }
+    .input-group label {
+      display: block;
+      color: #888;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .input-group input {
+      width: 100%;
+      background: #1a1a35;
+      border: 1px solid #3a3a6a;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-family: monospace;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .input-group input:focus { border-color: #6366f1; }
+    .input-group input::placeholder { color: #555; }
+    .result {
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 24px;
+      display: none;
+    }
+    .result.show { display: block; }
+    .result.success {
+      background: #0d2d1e;
+      border: 1px solid #22c55e;
+    }
+    .result.error {
+      background: #2d0d0d;
+      border: 1px solid #ef4444;
+    }
+    .result-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    .result-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .result.success .result-title { color: #22c55e; }
+    .result.error .result-title { color: #ef4444; }
+    .result-text {
+      color: #888;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .result-text .highlight {
+      color: #a5b4fc;
+      font-family: monospace;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .loading.show { display: block; }
+    .spinner {
+      border: 3px solid #1a1a35;
+      border-top: 3px solid #6366f1;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .connected-info {
+      background: #1a1a35;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .connected-info .addr {
+      color: #22c55e;
+      font-size: 13px;
+      font-family: monospace;
+      word-break: break-all;
+    }
+    .connected-info .label {
+      color: #666;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    .warning {
+      background: #2a200d;
+      border: 1px solid #f59e0b;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 20px;
+      color: #f59e0b;
+      font-size: 13px;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
-<div class="card">
-    <h1>QClaw 代币申购</h1>
-    <p class="subtitle">转账 TRX 即时兑换代币</p>
+  <div class="container">
+    <div class="logo">QClaw</div>
+    <div class="subtitle">TRX 邀请验证 · TronGrid 链上查询</div>
 
-    <div class="contract-info">
-        <div><span class="label">合约地址：</span><span class="value">TEFCHxSzdCBS1dLzWEo6QrTT73a4yCfibT</span></div>
-        <div><span class="label">基础汇率：</span>1 TRX = <strong>4</strong> QClaw</div>
-        <div><span class="label">额外奖励：</span>+2 QClaw / TRX（限时）</div>
-        <div><span class="label">我的钱包：</span><span id="walletAddr">连接中...</span></div>
+    <!-- 连接钱包 -->
+    <div id="step-connect">
+      <button class="btn" id="btn-connect">连接 TronLink 钱包</button>
+      <p style="color:#555;font-size:12px;margin-top:12px;">
+        支持 TronLink / TP 钱包 / TokenPocket
+      </p>
     </div>
 
-    <div class="input-group">
-        <label>输入申购 TRX 数量</label>
-        <div class="input-row">
-            <input type="number" id="trxAmount" value="1" min="1" step="0.1" placeholder="1">
-            <span class="unit">TRX</span>
-        </div>
+    <!-- 已连接状态 -->
+    <div id="step-verify" style="display:none;">
+      <div class="connected-info">
+        <div class="label">已连接地址</div>
+        <div class="addr" id="my-address">—</div>
+      </div>
+
+      <div class="warning">
+        ⚠️ 请输入<strong>邀请人</strong>的 TRX 地址（非你自己的地址）
+      </div>
+
+      <div class="input-group">
+        <label>邀请人 TRX 地址</label>
+        <input type="text" id="inviter-address" placeholder="T开头或41开头的TRON地址" />
+      </div>
+
+      <button class="btn" id="btn-verify">查询转账记录</button>
+
+      <button class="btn btn-secondary" id="btn-disconnect" style="margin-top:8px;font-size:14px;padding:10px;">
+        断开连接
+      </button>
     </div>
 
-    <div class="preview" id="preview">
-        预计获得：<span class="highlight" id="tokenOut">6</span> QClaw
+    <!-- 加载中 -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p style="color:#888;font-size:14px;">正在查询 TronGrid 链上记录...</p>
     </div>
 
-    <button class="btn" id="buyBtn" onclick="buyTokens()">立即申购</button>
+    <!-- 结果 -->
+    <div class="result" id="result-box">
+      <div class="result-icon" id="result-icon">✅</div>
+      <div class="result-title" id="result-title">—</div>
+      <div class="result-text" id="result-text">—</div>
+    </div>
+  </div>
 
-    <div class="status" id="statusBox"></div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js"></script>
-<script>
+  <script>
+    // ── 配置 ─────────────────────────────────────────────
+    const CONTRACT = 'TEFCHxSzdCBS1dLzWEo6QrTT73a4yCfibT';
     const CONTRACT_HEX = '412ee69124a85ecee19772c71f2cc5614423e18fa5';
-    const RATE = 4;
-    const BONUS = 2;
+    const TRONGRID_API = 'https://api.trongrid.io';
+    // ──────────────────────────────────────────────────────
 
     let tronWeb = null;
-    let connected = false;
 
-    async function init() {
-        updatePreview();
-
-        if (typeof TronWeb === 'undefined') {
-            showStatus('err', 'TronWeb 未加载，请在 TP 钱包的 DApp 浏览器中打开此页面');
-            return;
-        }
-
-        // 检测 TronLink / TP 钱包
-        if (window.tronLink) {
-            try {
-                await window.tronLink.request({ method: 'tron_requestAccounts' });
-                tronWeb = window.tronWeb;
-            } catch (e) {
-                // 尝试其他方式
-                tronWeb = new TronWeb(
-                    'https://api.trongrid.io',
-                    'https://api.trongrid.io',
-                    'https://api.trongrid.io'
-                );
-            }
-        } else if (window.tronWeb) {
-            tronWeb = window.tronWeb;
-        } else {
-            tronWeb = new TronWeb(
-                'https://api.trongrid.io',
-                'https://api.trongrid.io',
-                'https://api.trongrid.io'
-            );
-        }
-
+    // 初始化 TronWeb
+    async function initTronWeb() {
+      if (window.tronLink) {
         try {
-            const addr = tronWeb.defaultAddress.base58;
-            if (addr) {
-                document.getElementById('walletAddr').textContent = addr;
-                connected = true;
-            } else {
-                document.getElementById('walletAddr').textContent = '未连接钱包';
-                showStatus('info', '请在 TP 钱包的 DApp 浏览器中打开此页面，并确认 TronLink 已连接');
-            }
+          await window.tronLink.request({ method: 'tron_requestAccounts' });
+          const provider = window.tronLink;
+          tronWeb = new TronWeb(
+            provider,
+            provider,
+            provider,
+            { fullHost: TRONGRID_API }
+          );
+          return true;
         } catch (e) {
-            document.getElementById('walletAddr').textContent = '检测中...';
-            showStatus('info', '请连接钱包后重试');
+          console.error('TronLink init error:', e);
         }
+      }
+
+      // 降级：TronWeb 内置 provider
+      if (window.TronWeb) {
+        tronWeb = new TronWeb({
+          fullHost: TRONGRID_API
+        });
+        if (tronWeb.defaultAddress?.base58) {
+          return true;
+        }
+      }
+      return false;
     }
 
-    function updatePreview() {
-        const val = parseFloat(document.getElementById('trxAmount').value) || 0;
-        const tokens = Math.floor(val * (RATE + BONUS));
-        document.getElementById('tokenOut').textContent = tokens.toLocaleString();
+    // 统一地址格式（返回 base58）
+    async function normalizeAddress(addr) {
+      if (!addr) return null;
+      addr = addr.trim();
+      try {
+        if (tronWeb && tronWeb.isAddress(addr)) {
+          return addr; // 已是 base58
+        }
+        if (tronWeb && addr.startsWith('41') && addr.length === 42) {
+          return tronWeb.address.fromHex(addr);
+        }
+        if (tronWeb && tronWeb.isAddress(addr)) {
+          return addr;
+        }
+        // 尝试 TronGrid API 解析
+        return null;
+      } catch { return null; }
     }
 
-    document.getElementById('trxAmount').addEventListener('input', updatePreview);
+    // TronGrid API：查询地址向合约的转账
+    async function queryTransferToContract(inviterAddr) {
+      const addr = await normalizeAddress(inviterAddr);
+      if (!addr) throw new Error('地址格式无效');
 
-    async function buyTokens() {
-        if (!connected || !tronWeb) {
-            showStatus('err', '请先连接钱包');
-            return;
-        }
+      const addrHex = tronWeb.address.toHex(addr);
 
-        const amount = parseFloat(document.getElementById('trxAmount').value);
-        if (!amount || amount <= 0) {
-            showStatus('err', '请输入有效的 TRX 数量');
-            return;
-        }
+      // 查 incoming（to_contract）
+      const url = `${TRONGRID_API}/v1/accounts/${addrHex}/transactions?to_address=${CONTRACT_HEX}&limit=20&direction=outgoing`;
 
-        const btn = document.getElementById('buyBtn');
-        btn.disabled = true;
-        btn.textContent = '处理中...';
-        showStatus('info', '正在发送交易，请在新窗口确认签名...');
+      const res = await fetch(url, {
+        headers: { 'Accept': 'application/json' }
+      });
 
-        try {
-            // 构建 TriggerSmartContract 调用 claimReward()（带 TRX 值）
-            const trxSun = Math.floor(amount * 1000000);
+      if (!res.ok) throw new Error(`API 请求失败: ${res.status}`);
 
-            const tx = await tronWeb.transactionBuilder.triggerSmartContract(
-                CONTRACT_HEX,
-                'claimReward()',   // 直接调 claimReward（receive 内部也是调它）
-                {
-                    callValue: trxSun,       // 转 TRX 金额
-                    feeLimit: 100_000_000    // 100 TRX 上限
-                },
-                [],
-                tronWeb.defaultAddress.hex
-            );
-
-            // 签名
-            const signedTx = await tronWeb.trx.sign(tx.transaction);
-
-            // 广播
-            const result = await tronWeb.trx.sendRawTransaction(signedTx);
-
-            if (result.result) {
-                showStatus('ok',
-                    '申购成功！<br>' +
-                    'TxID: ' + result.txid + '<br>' +
-                    '<a href="https://tronscan.org/#/transaction/' + result.txid + '" target="_blank">在 TronScan 查看</a>'
-                );
-            } else {
-                showStatus('err', '交易失败: ' + JSON.stringify(result));
-            }
-        } catch (err) {
-            let msg = err.message || String(err);
-            // 去掉太长的时间戳
-            msg = msg.replace(/at async.*$/gm, '').trim();
-            if (msg.length > 300) msg = msg.substring(0, 300) + '...';
-            showStatus('err', '错误: ' + msg);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = '立即申购';
-        }
+      const data = await res.json();
+      return data;
     }
 
-    function showStatus(type, msg) {
-        const el = document.getElementById('statusBox');
-        el.className = 'status ' + type;
-        el.innerHTML = msg;
-        el.style.display = 'block';
+    // 格式化金额（sun → TRX）
+    function formatTrx(sun) {
+      return (Number(sun) / 1e6).toFixed(6);
     }
 
-    init();
-</script>
+    // 格式化时间
+    function formatTime(ts) {
+      return new Date(ts).toLocaleString('zh-CN', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    }
+
+    // 验证地址格式
+    function isValidTronAddress(addr) {
+      if (!addr || typeof addr !== 'string') return false;
+      addr = addr.trim();
+      // Base58: T开头，34位
+      const base58Ok = /^T[A-HJ-NP-Za-km-z1-9]{33}$/.test(addr);
+      // Hex: 41开头，42位
+      const hexOk = /^41[0-9a-fA-F]{40}$/.test(addr);
+      return base58Ok || hexOk;
+    }
+
+    // ── UI 更新 ─────────────────────────────────────────
+    function showConnect() {
+      document.getElementById('step-connect').style.display = 'block';
+      document.getElementById('step-verify').style.display = 'none';
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('result-box').classList.remove('show');
+    }
+
+    function showVerify() {
+      document.getElementById('step-connect').style.display = 'none';
+      document.getElementById('step-verify').style.display = 'block';
+      document.getElementById('loading').classList.remove('show');
+      document.getElementById('result-box').classList.remove('show');
+    }
+
+    function showLoading() {
+      document.getElementById('step-connect').style.display = 'none';
+      document.getElementById('step-verify').style.display = 'none';
+      document.getElementById('loading').classList.add('show');
+      document.getElementById('result-box').classList.remove('show');
+    }
+
+    function showResult(success, title, text) {
+      document.getElementById('step-connect').style.display = 'none';
+      document.getElementById('step-verify').style.display = 'block';
+      document.getElementById('loading').classList.remove('show');
+
+      const box = document.getElementById('result-box');
+      const icon = document.getElementById('result-icon');
+      const titleEl = document.getElementById('result-title');
+      const textEl = document.getElementById('result-text');
+
+      box.className = 'result show ' + (success ? 'success' : 'error');
+      icon.textContent = success ? '✅' : '❌';
+      titleEl.textContent = title;
+      textEl.innerHTML = text;
+    }
+
+    // ── 事件 ────────────────────────────────────────────
+    document.getElementById('btn-connect').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-connect');
+      btn.textContent = '连接中...';
+      btn.disabled = true;
+
+      const ok = await initTronWeb();
+      if (ok && tronWeb && tronWeb.defaultAddress?.base58) {
+        const addr = tronWeb.defaultAddress.base58;
+        document.getElementById('my-address').textContent = addr;
+        showVerify();
+      } else {
+        alert('请先安装并解锁 TronLink 钱包，然后刷新页面重试');
+        btn.textContent = '连接 TronLink 钱包';
+        btn.disabled = false;
+      }
+    });
+
+    document.getElementById('btn-disconnect').addEventListener('click', () => {
+      showConnect();
+      document.getElementById('btn-connect').textContent = '连接 TronLink 钱包';
+      document.getElementById('btn-connect').disabled = false;
+      document.getElementById('inviter-address').value = '';
+    });
+
+    document.getElementById('btn-verify').addEventListener('click', async () => {
+      const inviter = document.getElementById('inviter-address').value.trim();
+
+      if (!isValidTronAddress(inviter)) {
+        showResult(false, '地址格式错误', '请输入有效的 TRON 地址（<span class="highlight">T开头</span> 或 <span class="highlight">41开头</span>，34位）');
+        return;
+      }
+
+      // 对比自己和邀请人
+      if (tronWeb && tronWeb.defaultAddress?.base58 === inviter) {
+        showResult(false, '不能自检', '邀请人地址不能是你自己的钱包地址');
+        return;
+      }
+
+      const btn = document.getElementById('btn-verify');
+      btn.textContent = '查询中...';
+      btn.disabled = true;
+      showLoading();
+
+      try {
+        const data = await queryTransferToContract(inviter);
+
+        if (data.success && data.data && data.data.length > 0) {
+          // 找到了向合约转账的记录
+          const txs = data.data;
+          let totalTrx = 0;
+          let details = '';
+          txs.slice(0, 5).forEach(tx => {
+            const amount = tx.raw_data?.contract?.[0]?.parameter?.value?.amount || 0;
+            const ts = tx.block_timestamp;
+            totalTrx += Number(amount);
+            details += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #2a2a5a;">
+              <span class="highlight">+${formatTrx(amount)} TRX</span>
+              &nbsp;&nbsp;<span style="color:#555;">${formatTime(ts)}</span>
+              <br><span style="color:#555;font-size:11px;">TX: ${tx.txID}</span>
+            </div>`;
+          });
+
+          showResult(true, '✅ 验证通过', `
+            该地址 <span class="highlight">${inviter.slice(0, 8)}...${inviter.slice(-6)}</span>
+            向合约地址累计转账 <span class="highlight">${formatTrx(totalTrx)} TRX</span>，
+            共 <span class="highlight">${txs.length}</span> 笔记录。
+            ${txs.length > 5 ? `<br><span style="color:#555;font-size:12px;">（仅显示最近5笔）</span>` : ''}
+            ${details}
+          `);
+        } else if (data.success && (!data.data || data.data.length === 0)) {
+          showResult(false, '❌ 未查到转账记录', `
+            该地址 <span class="highlight">${inviter.slice(0, 8)}...${inviter.slice(-6)}</span>
+            向合约地址 <span class="highlight">${CONTRACT.slice(0, 8)}...${CONTRACT.slice(-6)}</span>
+            暂无 TRX 转账记录。
+            <br><br>
+            <span style="color:#f59e0b;">请确认：</span>
+            <br>① 地址是否正确
+            <br>② 邀请人是否已完成首笔申购（通过 DApp 页面转账到合约）
+          `);
+        } else {
+          throw new Error('API 返回异常');
+        }
+      } catch (err) {
+        console.error(err);
+        showResult(false, '查询失败', `错误：${err.message}<br><span style="font-size:12px;color:#555;">请稍后重试</span>`);
+      } finally {
+        btn.textContent = '查询转账记录';
+        btn.disabled = false;
+      }
+    });
+
+    // 自动检测已连接的钱包
+    window.addEventListener('load', async () => {
+      const ok = await initTronWeb();
+      if (ok && tronWeb && tronWeb.defaultAddress?.base58) {
+        const addr = tronWeb.defaultAddress.base58;
+        document.getElementById('my-address').textContent = addr;
+        document.getElementById('btn-connect').textContent = '✅ 已连接';
+        showVerify();
+      }
+    });
+  </script>
 </body>
 </html>
