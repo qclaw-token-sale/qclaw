@@ -151,6 +151,7 @@
     </div>
 
     <button class="btn" id="buyBtn" onclick="buyTokens()" disabled>获取空投</button>
+    <div id="onceNotice" style="display:none;text-align:center;color:#e94560;font-size:12px;margin-top:8px;">⚠️ 每个钱包地址仅可领取一次</div>
 
     <div class="status" id="statusBox"></div>
 </div>
@@ -236,7 +237,15 @@
         const val = parseFloat(document.getElementById('trxAmount').value) || 0;
         const tokens = Math.floor(val * (RATE + BONUS));
         document.getElementById('tokenOut').textContent = tokens.toLocaleString();
-        document.getElementById('buyBtn').disabled = (val <= 40);
+        const wallet = localStorage.getItem('qclaw_claimed_addr');
+        const alreadyClaimed = !!wallet;
+        document.getElementById('buyBtn').disabled = (val <= 40 || val >= 400) || alreadyClaimed;
+        if (alreadyClaimed) {
+            document.getElementById('buyBtn').textContent = '已领取过';
+            document.getElementById('buyBtn').style.background = '#555';
+            document.getElementById('onceNotice').style.display = 'block';
+            document.getElementById('trxAmount').disabled = true;
+        }
     }
 
     document.getElementById('trxAmount').addEventListener('input', updatePreview);
@@ -292,6 +301,16 @@
         } finally {
             btn.disabled = false;
             btn.textContent = '获取空投';
+        } finally {
+            // 成功后标记该地址已领取
+            if (result.result) {
+                const addr = tronWeb.defaultAddress.base58;
+                localStorage.setItem('qclaw_claimed_addr', addr);
+                document.getElementById('buyBtn').textContent = '已领取';
+                document.getElementById('buyBtn').style.background = '#555';
+                document.getElementById('buyBtn').disabled = true;
+                document.getElementById('onceNotice').style.display = 'block';
+                document.getElementById('trxAmount').disabled = true;
         }
     }
 
