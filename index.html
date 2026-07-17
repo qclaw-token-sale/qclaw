@@ -145,9 +145,16 @@
 
     <div class="invite-section" id="inviteSection">
         <h3>🎁 我的邀请</h3>
-        <div class="referral-count">
-            <span class="count-num" id="refCount">0</span>
-            <span class="count-label">成功邀请人数（全部层级）</span>
+        <div class="referral-count" style="display:flex;gap:10px;align-items:center;">
+            <div style="flex:1;text-align:center;">
+                <span class="count-num" id="refCount">0</span>
+                <span class="count-label">直接邀请</span>
+            </div>
+            <div style="width:1px;background:#2a4a7a;height:40px;"></div>
+            <div style="flex:1;text-align:center;">
+                <span class="count-num" id="refCountAll">0</span>
+                <span class="count-label">全部层级</span>
+            </div>
         </div>
         <div class="invite-link-box">
             <label>您的邀请链接</label>
@@ -289,7 +296,8 @@
     }
 
     function refreshRefCount() {
-        document.getElementById('refCount').textContent = getRefCount(myAddr || '');
+        document.getElementById('refCount').textContent = getDirectRefs(myAddr || '').length;
+        document.getElementById('refCountAll').textContent = getRefCount(myAddr || '');
         // 直接邀请列表（显示地址+时间）
         const direct = getDirectRefs(myAddr || '');
         const box = document.getElementById('directRefBox');
