@@ -479,8 +479,43 @@ async function createReferrerGist(refAddr, newAddr) {
     return null;
 }
 
+// ═══════════════════════════════════════════════
+//  多层级邀请系统
+// ═══════════════════════════════════════════════
+
+// 存储每个人的上级邀请人（用于多层级追溯）
+const RefTree = {
+    get: addr => localStorage.getItem('qclaw_ref_tree_' + addr),
+    set: (addr, referrer) => localStorage.setItem('qclaw_ref_tree_' + addr, referrer)
+};
+
+// 追加邀请记录（支持多层级）
 async function appendReferrerGist(refAddr, newAddr) {
+    // 1. 记录 newAddr 的上级邀请人
+    RefTree.set(newAddr, refAddr);
+    
+    // 2. 追溯整个邀请链，给每个人都加分
+    const credited = {};
+    let currentReferrer = refAddr;
+    
+    while (currentReferrer && !credited[currentReferrer]) {
+        credited[currentReferrer] = true;
+        
+        // 写入当前邀请人的 Gist
+        await _appendToGist(currentReferrer, newAddr);
+        
+        // 向上追溯
+        currentReferrer = RefTree.get(currentReferrer);
+    }
+    
+    return true;
+}
+
+// 实际写入单个 Gist
+async function _appendToGist(refAddr, newAddr) {
     let gistId = getReferrerGistId(refAddr);
+    
+    // 如果没有 Gist，创建新的
     if (!gistId) {
         gistId = await createReferrerGist(refAddr, newAddr);
         return !!gistId;
@@ -495,12 +530,15 @@ async function appendReferrerGist(refAddr, newAddr) {
         const content = data.files['qclaw_referrals.json']?.content || '[]';
         let records = JSON.parse(content);
         
+        // 检查是否已存在
         if (records.some(r => r.addr === newAddr)) return true;
         
+        // 追加新记录
         const now = new Date();
         const time = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
         records.push({ addr: newAddr, time, ref: refAddr });
         
+        // 更新 Gist
         const updateRes = await fetch(`https://api.github.com/gists/${gistId}`, {
             method: 'PATCH',
             headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
@@ -591,17 +629,21 @@ function updatePreview() {
 function refreshInvite() {
     if (!myAddr) return;
     fetchReferrerGist(myAddr).then(records => {
-        document.getElementById('refCount').textContent = records.length;
+        // 直接邀请 = records 中 ref === myAddr 的记录
+        const directRecords = records.filter(r => r.ref === myAddr);
+        document.getElementById('refCount').textContent = directRecords.length;
+        
+        // 全部层级 = 所有记录
         document.getElementById('refCountAll').textContent = records.length;
         
         const box = document.getElementById('directRefBox');
-        if (records.length === 0) {
+        if (directRecords.length === 0) {
             box && (box.style.display = 'none');
         } else {
             box && (box.style.display = 'block');
             const list = document.getElementById('directRefList');
             if (list) {
-                list.innerHTML = records.map(r =>
+                list.innerHTML = directRecords.map(r =>
                     `<div class="direct-item">
                         <span class="direct-addr">${r.addr.slice(0,6)}...${r.addr.slice(-4)}</span>
                         <span class="direct-time">${r.time}</span>
