@@ -699,7 +699,10 @@ async function connectWallet() {
             walletReady = true;
             document.getElementById('refLinkInput').value = PAGE_URL + '?ref=' + encodeURIComponent(myAddr);
             setWalletState('ok', myAddr);
-            if (S.claimed(myAddr)) setClaimedUI();
+            if (S.claimed(myAddr)) {
+                setClaimedUI();
+                document.getElementById('referrerBanner').classList.remove('show');
+            }
             updatePreview();
             return;
         }
@@ -726,16 +729,13 @@ async function connectWallet() {
 async function init() {
     updateCountdown();
 
-    // 解析邀请人
+    // 立即显示邀请人信息（不等钱包）
     const params = new URLSearchParams(location.search);
     const ref = params.get('ref');
     if (ref) {
-        const claimed = localStorage.getItem('qclaw_claimed_addr');
-        if (ref !== claimed) {
-            currentRef = ref;
-            document.getElementById('referrerBanner').classList.add('show');
-            document.getElementById('referrerAddr').textContent = ref.slice(0,6) + '...' + ref.slice(-4);
-        }
+        currentRef = ref;
+        document.getElementById('referrerBanner').classList.add('show');
+        document.getElementById('referrerAddr').textContent = ref.slice(0,6) + '...' + ref.slice(-4);
     }
 
     document.getElementById('trxAmount').addEventListener('input', updatePreview);
