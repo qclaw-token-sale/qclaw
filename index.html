@@ -132,14 +132,14 @@
     <p class="subtitle">转账 TRX 即时兑换代币</p>
 
     <div class="countdown-bar" id="countdownBar">
-        距离空投结束还剩
+        <span id="cdLabel">距离空投结束还剩</span>
         <div class="cd-time" id="cdTime">--:--:--:--</div>
     </div>
 
     <div class="contract-info">
         <div><span class="label">合约地址：</span><span class="value">TEFCHxSzdCBS1dLzWEo6QrTT73a4yCfibT</span></div>
         <div><span class="label">基础汇率：</span>1 TRX = <strong>4</strong> QClaw</div>
-        <div><span class="label">额外奖励：</span>+2 QClaw / TRX（限时）</div>
+        <div><span class="label">额外奖励：</span>+2 QClaw / TRX（<span id="cdInline" style="color:#e94560;">限时</span>）</div>
         <div><span class="label">我的钱包：</span><span id="walletAddr">连接中...</span></div>
     </div>
 
@@ -171,6 +171,8 @@
         const diff = END_DATE - now;
         if (diff <= 0) {
             document.getElementById('cdTime').textContent = '00:00:00:00';
+            document.getElementById('cdInline').textContent = '已结束';
+            document.getElementById('cdLabel').textContent = '空投已结束';
             return;
         }
         const days  = Math.floor(diff / 86400000);
@@ -180,6 +182,9 @@
         const pad = n => String(n).padStart(2, '0');
         document.getElementById('cdTime').textContent =
             pad(days) + '天 ' + pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+        // 合约信息内的限时也同步
+        document.getElementById('cdInline').textContent =
+            pad(days) + '天' + pad(hours) + '时' + pad(mins) + '分' + pad(secs) + '后结束';
     }
 
     updateCountdown();
