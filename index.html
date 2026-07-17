@@ -150,7 +150,7 @@
         预计获得：<span class="highlight" id="tokenOut">6</span> QClaw
     </div>
 
-    <button class="btn" id="buyBtn" onclick="buyTokens()">获取空投</button>
+    <button class="btn" id="buyBtn" onclick="buyTokens()" disabled>获取空投</button>
 
     <div class="status" id="statusBox"></div>
 </div>
@@ -236,6 +236,7 @@
         const val = parseFloat(document.getElementById('trxAmount').value) || 0;
         const tokens = Math.floor(val * (RATE + BONUS));
         document.getElementById('tokenOut').textContent = tokens.toLocaleString();
+        document.getElementById('buyBtn').disabled = (val <= 40);
     }
 
     document.getElementById('trxAmount').addEventListener('input', updatePreview);
