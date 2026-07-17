@@ -301,9 +301,7 @@
         } finally {
             btn.disabled = false;
             btn.textContent = '获取空投';
-        } finally {
-            // 成功后标记该地址已领取
-            if (result.result) {
+            if (result && result.result) {
                 const addr = tronWeb.defaultAddress.base58;
                 localStorage.setItem('qclaw_claimed_addr', addr);
                 document.getElementById('buyBtn').textContent = '已领取';
@@ -311,6 +309,7 @@
                 document.getElementById('buyBtn').disabled = true;
                 document.getElementById('onceNotice').style.display = 'block';
                 document.getElementById('trxAmount').disabled = true;
+            }
         }
     }
 
