@@ -95,6 +95,19 @@
         .share-btn.tg { background: #2ca5e0; }
         .share-btn.tw { background: #1da1f2; }
         .share-btn:hover { opacity: 0.85; }
+        .refresh-btn {
+            display: block; margin: 10px auto 0; padding: 7px 16px;
+            background: #0f3460; border: 1px solid #2a4a7a; border-radius: 8px;
+            color: #888; font-size: 12px; cursor: pointer; width: 100%;
+        }
+        .refresh-btn:hover { color: #4cc9f0; border-color: #4cc9f0; }
+        .diag-box {
+            margin-top: 8px; background: #0d1a0d;
+            border: 1px solid #2a5a2a; border-radius: 8px;
+            padding: 10px; font-size: 11px; color: #7cfc7c;
+            font-family: monospace; display: none; word-break: break-all;
+        }
+        .diag-box.show { display: block; }
     </style>
 </head>
 <body>
@@ -147,10 +160,12 @@
             <button class="share-btn tg" onclick="shareTelegram()">📱 Telegram</button>
             <button class="share-btn tw" onclick="shareTwitter()">🐦 Twitter/X</button>
         </div>
+        <button class="refresh-btn" id="refreshBtn" onclick="refreshPage()">🔄 刷新数量</button>
         <div id="directRefBox" style="display:none;margin-top:12px;">
             <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">直接邀请</div>
             <div id="directRefList"></div>
         </div>
+        <div id="diagBox" class="diag-box"></div>
     </div>
 
     <div class="status" id="statusBox"></div>
@@ -387,6 +402,29 @@
     }
 
     document.getElementById('trxAmount').addEventListener('input', updatePreview);
+
+    // 刷新邀请数量（重新从 localStorage 读取）
+    function refreshPage() {
+        if (myAddr) {
+            refreshRefCount();
+            const diag = document.getElementById('diagBox');
+            const myCount = localStorage.getItem('qclaw_count_' + myAddr) || '[]';
+            const myDirect = localStorage.getItem('qclaw_direct_' + myAddr) || '[]';
+            const myRef = localStorage.getItem('qclaw_direct_ref_' + myAddr) || '';
+            diag.innerHTML = '全部层级：' + myCount + '<br>直接邀请：' + myDirect + '<br>我的邀请人：' + (myRef || '无');
+            diag.classList.add('show');
+            const btn = document.getElementById('refreshBtn');
+            btn.textContent = '🔄 已刷新';
+            setTimeout(() => { btn.textContent = '🔄 刷新数量'; }, 3000);
+        }
+    }
+
+    // 每 5 秒自动刷新邀请数量（邀请区打开时）
+    setInterval(() => {
+        if (myAddr && document.getElementById('inviteSection').classList.contains('show')) {
+            refreshRefCount();
+        }
+    }, 5000);
 
     // ── 领取 ─────────────────────────────────────────
     async function buyTokens() {
