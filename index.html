@@ -36,22 +36,18 @@
             font-size: 13px;
             margin-bottom: 10px;
         }
-        .countdown-bar {
-            text-align: center;
-            background: #0f3460;
+        .referrer-banner {
+            background: #1a0d3b;
+            border: 1px solid #6b4fd8;
             border-radius: 10px;
-            padding: 10px 16px;
-            margin-bottom: 20px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
             font-size: 13px;
-            color: #aaa;
+            color: #a78bfa;
+            text-align: center;
+            display: none;
         }
-        .countdown-bar .cd-time {
-            font-size: 20px;
-            font-weight: bold;
-            color: #e94560;
-            letter-spacing: 2px;
-            margin-top: 4px;
-        }
+        .referrer-banner.show { display: block; }
         .contract-info {
             background: #0f3460;
             border-radius: 10px;
@@ -111,6 +107,14 @@
         .btn:hover { transform: scale(1.01); }
         .btn:active { transform: scale(0.99); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-invite {
+            background: linear-gradient(135deg, #6b4fd8, #5a3fc0);
+            margin-top: 10px;
+            font-size: 15px;
+            padding: 13px;
+            display: none;
+        }
+        .btn-invite.show { display: block; }
         .status {
             margin-top: 16px;
             padding: 14px;
@@ -124,12 +128,134 @@
         .status.err { background: #3b0d14; color: #f87171; display: block; }
         .status.info { background: #0f3460; color: #4cc9f0; display: block; }
         .status a { color: #4cc9f0; }
+
+        /* 邀请区 */
+        .invite-section {
+            display: none;
+            margin-top: 16px;
+            border-top: 1px solid #2a4a7a;
+            padding-top: 16px;
+        }
+        .invite-section.show { display: block; }
+        .invite-section h3 {
+            font-size: 15px;
+            color: #a78bfa;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .invite-link-box {
+            background: #0f3460;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .invite-link-box label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .invite-link-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .invite-link-row input {
+            flex: 1;
+            background: #1a1a35;
+            border: 1px solid #3a3a6a;
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #a5b4fc;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .btn-copy {
+            padding: 10px 16px;
+            background: #6b4fd8;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-copy:hover { background: #5a3fc0; }
+        .referral-count {
+            background: #1a0d3b;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .referral-count .count-num {
+            font-size: 28px;
+            font-weight: bold;
+            color: #a78bfa;
+            text-align: center;
+            display: block;
+        }
+        .referral-count .count-label {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            display: block;
+            margin-top: 2px;
+        }
+        .referral-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .referral-list .ref-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid #1a2a4a;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .referral-list .ref-item:last-child { border-bottom: none; }
+        .referral-list .ref-addr { color: #4cc9f0; font-family: monospace; }
+        .referral-list .ref-time { color: #888; font-size: 11px; }
+        .empty-list {
+            text-align: center;
+            color: #555;
+            font-size: 13px;
+            padding: 16px 0;
+        }
+        .share-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .share-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            color: #fff;
+        }
+        .share-btn.tg { background: #2ca5e0; }
+        .share-btn.tw { background: #1da1f2; }
+        .share-btn:hover { opacity: 0.85; }
     </style>
 </head>
 <body>
 <div class="card">
     <h1>QClaw项目</h1>
     <p class="subtitle">转账 TRX 即时兑换代币</p>
+
+    <div class="referrer-banner" id="referrerBanner">
+        🎁 您的好友 <span id="referrerAddr" style="color:#a78bfa;font-family:monospace;"></span> 邀请您参与
+    </div>
 
     <div class="contract-info">
         <div><span class="label">合约地址：</span><span class="value">TEFCHxSzdCBS1dLzWEo6QrTT73a4yCfibT</span></div>
@@ -153,13 +279,41 @@
     <button class="btn" id="buyBtn" onclick="buyTokens()" disabled>获取空投</button>
     <div id="onceNotice" style="display:none;text-align:center;color:#e94560;font-size:12px;margin-top:8px;">⚠️ 每个钱包地址仅可领取一次</div>
 
+    <button class="btn btn-invite" id="inviteBtn" onclick="showInviteSection()">🎁 邀请好友</button>
+
+    <!-- 邀请专区 -->
+    <div class="invite-section" id="inviteSection">
+        <h3>🎁 我的邀请</h3>
+
+        <div class="referral-count">
+            <span class="count-num" id="refCount">0</span>
+            <span class="count-label">成功邀请人数</span>
+        </div>
+
+        <div class="invite-link-box">
+            <label>您的邀请链接</label>
+            <div class="invite-link-row">
+                <input type="text" id="refLinkInput" readonly />
+                <button class="btn-copy" id="copyBtn" onclick="copyRefLink()">复制</button>
+            </div>
+        </div>
+
+        <div class="share-btns">
+            <button class="share-btn tg" onclick="shareTelegram()">📱 Telegram</button>
+            <button class="share-btn tw" onclick="shareTwitter()">🐦 Twitter/X</button>
+        </div>
+
+        <div class="referral-list" id="refList">
+            <div class="empty-list" id="emptyRef">暂无邀请记录</div>
+        </div>
+    </div>
+
     <div class="status" id="statusBox"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js"></script>
 <script>
-    // ── 一个月倒计时 ─────────────────────────────────────
-    // 截止日期：2026年8月17日 08:00:00（+30天）
+    // ── 倒计时 ─────────────────────────────────────────
     const END_DATE = new Date('2026-08-17T00:00:00+08:00');
 
     function updateCountdown() {
@@ -177,20 +331,120 @@
         document.getElementById('cdInline').textContent =
             pad(days) + '天' + pad(hours) + '时' + pad(mins) + '分' + pad(secs) + '后结束';
     }
-
     updateCountdown();
     setInterval(updateCountdown, 1000);
-    // ─────────────────────────────────────────────────────
+    // ──────────────────────────────────────────────────
 
     const CONTRACT_HEX = '412ee69124a85ecee19772c71f2cc5614423e18fa5';
     const RATE = 4;
     const BONUS = 2;
+    const TRONGRID_API = 'https://api.trongrid.io';
+    const PAGE_URL = 'https://qclaw-token-sale.github.io/qclaw/';
 
     let tronWeb = null;
     let connected = false;
+    let myAddr = null;
+    let currentRef = null; // 当前访问者的邀请人
 
+    // ── 邀请相关工具 ───────────────────────────────────
+    function getMyReferrals(addr) {
+        const key = 'qclaw_refs_' + addr;
+        try {
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        } catch { return []; }
+    }
+
+    function addReferral(refAddr, claimedTime) {
+        const key = 'qclaw_refs_' + myAddr;
+        const refs = getMyReferrals(myAddr);
+        // 避免重复记录同一地址
+        if (refs.some(r => r.addr === refAddr)) return;
+        refs.unshift({ addr: refAddr, time: claimedTime || new Date().toLocaleString('zh-CN') });
+        localStorage.setItem(key, JSON.stringify(refs));
+    }
+
+    function renderRefList() {
+        const refs = getMyReferrals(myAddr || '');
+        const count = refs.length;
+        document.getElementById('refCount').textContent = count;
+
+        const list = document.getElementById('refList');
+        if (refs.length === 0) {
+            list.innerHTML = '<div class="empty-list">暂无邀请记录</div>';
+            return;
+        }
+        list.innerHTML = refs.slice(0, 50).map(r =>
+            '<div class="ref-item">' +
+                '<span class="ref-addr">' + r.addr.slice(0,6) + '...' + r.addr.slice(-4) + '</span>' +
+                '<span class="ref-time">' + r.time + '</span>' +
+            '</div>'
+        ).join('');
+    }
+
+    function getRefLink(addr) {
+        return PAGE_URL + '?ref=' + encodeURIComponent(addr);
+    }
+
+    function copyRefLink() {
+        const link = document.getElementById('refLinkInput').value;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(link).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = '已复制!';
+                setTimeout(() => btn.textContent = '复制', 2000);
+            });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = link;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            const btn = document.getElementById('copyBtn');
+            btn.textContent = '已复制!';
+            setTimeout(() => btn.textContent = '复制', 2000);
+        }
+    }
+
+    function shareTelegram() {
+        const link = document.getElementById('refLinkInput').value;
+        const text = encodeURIComponent('🎁 参与 QClaw 空投！使用我的邀请链接：' + link);
+        window.open('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + text, '_blank');
+    }
+
+    function shareTwitter() {
+        const link = document.getElementById('refLinkInput').value;
+        const text = encodeURIComponent('🎁 参与 QClaw 空投！使用我的邀请链接：' + link);
+        window.open('https://twitter.com/intent/tweet?text=' + text, '_blank');
+    }
+
+    function showInviteSection() {
+        const sec = document.getElementById('inviteSection');
+        if (sec.classList.contains('show')) {
+            sec.classList.remove('show');
+            return;
+        }
+        sec.classList.add('show');
+        renderRefList();
+    }
+
+    // ── 初始化 ─────────────────────────────────────────
     async function init() {
         updatePreview();
+
+        // 检查 URL 中的邀请人
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref && ref !== localStorage.getItem('qclaw_claimed_addr')) {
+            currentRef = ref;
+            // 检查是否已领取（自己不能是邀请人）
+            const myClaimed = localStorage.getItem('qclaw_claimed_addr');
+            if (myClaimed !== ref) {
+                document.getElementById('referrerBanner').classList.add('show');
+                document.getElementById('referrerAddr').textContent =
+                    ref.slice(0, 6) + '...' + ref.slice(-4);
+            }
+        }
 
         if (typeof TronWeb === 'undefined') {
             showStatus('err', 'TronWeb 未加载，请在 TP 钱包的 DApp 浏览器中打开此页面');
@@ -202,27 +456,32 @@
                 await window.tronLink.request({ method: 'tron_requestAccounts' });
                 tronWeb = window.tronWeb;
             } catch (e) {
-                tronWeb = new TronWeb(
-                    'https://api.trongrid.io',
-                    'https://api.trongrid.io',
-                    'https://api.trongrid.io'
-                );
+                tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
             }
         } else if (window.tronWeb) {
             tronWeb = window.tronWeb;
         } else {
-            tronWeb = new TronWeb(
-                'https://api.trongrid.io',
-                'https://api.trongrid.io',
-                'https://api.trongrid.io'
-            );
+            tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
         }
 
         try {
-            const addr = tronWeb.defaultAddress.base58;
-            if (addr) {
-                document.getElementById('walletAddr').textContent = addr;
+            myAddr = tronWeb.defaultAddress.base58;
+            if (myAddr) {
+                document.getElementById('walletAddr').textContent = myAddr;
                 connected = true;
+
+                // 设置邀请链接
+                document.getElementById('refLinkInput').value = getRefLink(myAddr);
+
+                // 加载邀请记录
+                renderRefList();
+
+                // 检查是否已领取过
+                const claimed = localStorage.getItem('qclaw_claimed_addr');
+                if (claimed) {
+                    document.getElementById('inviteBtn').classList.add('show');
+                    document.getElementById('inviteSection').classList.add('show');
+                }
             } else {
                 document.getElementById('walletAddr').textContent = '未连接钱包';
                 showStatus('info', '请在 TP 钱包的 DApp 浏览器中打开此页面，并确认 TronLink 已连接');
@@ -237,8 +496,8 @@
         const val = parseFloat(document.getElementById('trxAmount').value) || 0;
         const tokens = Math.floor(val * (RATE + BONUS));
         document.getElementById('tokenOut').textContent = tokens.toLocaleString();
-        const wallet = localStorage.getItem('qclaw_claimed_addr');
-        const alreadyClaimed = !!wallet;
+        const claimed = localStorage.getItem('qclaw_claimed_addr');
+        const alreadyClaimed = !!claimed;
         document.getElementById('buyBtn').disabled = (val <= 40 || val >= 400) || alreadyClaimed;
         if (alreadyClaimed) {
             document.getElementById('buyBtn').textContent = '已领取过';
@@ -255,7 +514,6 @@
             showStatus('err', '请先连接钱包');
             return;
         }
-
         const amount = parseFloat(document.getElementById('trxAmount').value);
         if (!amount || amount <= 0) {
             showStatus('err', '请输入有效的 TRX 数量');
@@ -267,28 +525,57 @@
         btn.textContent = '处理中...';
         showStatus('info', '正在发送交易，请在新窗口确认签名...');
 
+        let result = null;
         try {
             const trxSun = Math.floor(amount * 1000000);
-
             const tx = await tronWeb.transactionBuilder.triggerSmartContract(
-                CONTRACT_HEX,
-                'claimReward()',
-                {
-                    callValue: trxSun,
-                    feeLimit: 100_000_000
-                },
-                [],
-                tronWeb.defaultAddress.hex
+                CONTRACT_HEX, 'claimReward()',
+                { callValue: trxSun, feeLimit: 100_000_000 },
+                [], tronWeb.defaultAddress.hex
             );
-
             const signedTx = await tronWeb.trx.sign(tx.transaction);
-            const result = await tronWeb.trx.sendRawTransaction(signedTx);
+            result = await tronWeb.trx.sendRawTransaction(signedTx);
 
             if (result.result) {
+                const claimedTime = new Date().toLocaleString('zh-CN');
+                const myClaimedAddr = tronWeb.defaultAddress.base58;
+
+                // 记录自己已领取
+                localStorage.setItem('qclaw_claimed_addr', myClaimedAddr);
+
+                // 如果有邀请人 → 通知邀请人
+                if (currentRef) {
+                    // 通过 TronGrid 异步通知（写一个跨标签页事件通知）
+                    // 同时记录到本地
+                    try {
+                        const referrerRefs = JSON.parse(localStorage.getItem('qclaw_refs_' + currentRef) || '[]');
+                        if (!referrerRefs.some(r => r.addr === myClaimedAddr)) {
+                            referrerRefs.unshift({ addr: myClaimedAddr, time: claimedTime });
+                            localStorage.setItem('qclaw_refs_' + currentRef, JSON.stringify(referrerRefs));
+                        }
+                    } catch (_) {}
+                }
+
+                // 更新 UI
+                document.getElementById('buyBtn').textContent = '已领取';
+                document.getElementById('buyBtn').style.background = '#555';
+                document.getElementById('buyBtn').disabled = true;
+                document.getElementById('onceNotice').style.display = 'block';
+                document.getElementById('trxAmount').disabled = true;
+
+                // 隐藏邀请人 banner
+                document.getElementById('referrerBanner').classList.remove('show');
+
+                // 显示邀请按钮
+                document.getElementById('inviteBtn').classList.add('show');
+                document.getElementById('inviteSection').classList.add('show');
+                document.getElementById('refLinkInput').value = getRefLink(myClaimedAddr);
+                renderRefList();
+
                 showStatus('ok',
-                    '获取成功！<br>' +
-                    'TxID: ' + result.txid + '<br>' +
-                    '<a href="https://tronscan.org/#/transaction/' + result.txid + '" target="_blank">在 TronScan 查看</a>'
+                    '🎉 获取成功！<br>' +
+                    'TxID: <a href="https://tronscan.org/#/transaction/' + result.txid + '" target="_blank" style="color:#4cc9f0;font-size:12px;">' + result.txid.substring(0,20) + '...</a><br>' +
+                    '<span style="color:#4ade80;font-size:13px;">✨ 感谢参与！快去邀请好友吧！</span>'
                 );
             } else {
                 showStatus('err', '交易失败: ' + JSON.stringify(result));
@@ -301,15 +588,6 @@
         } finally {
             btn.disabled = false;
             btn.textContent = '获取空投';
-            if (result && result.result) {
-                const addr = tronWeb.defaultAddress.base58;
-                localStorage.setItem('qclaw_claimed_addr', addr);
-                document.getElementById('buyBtn').textContent = '已领取';
-                document.getElementById('buyBtn').style.background = '#555';
-                document.getElementById('buyBtn').disabled = true;
-                document.getElementById('onceNotice').style.display = 'block';
-                document.getElementById('trxAmount').disabled = true;
-            }
         }
     }
 
