@@ -487,14 +487,7 @@ async function createReferrerGist(refAddr, newAddr) {
 const GLOBAL_GIST_KEY = 'qclaw_global_ref_tree';
 
 async function getReferrer(addr) {
-    // 先尝试从 localStorage 缓存读取
-    const cached = localStorage.getItem('qclaw_ref_tree_' + addr);
-    if (cached) {
-        console.log('[QClaw] getReferrer 从缓存读取:', addr, '→', cached);
-        return cached;
-    }
-    
-    // 从全局 Gist 读取
+    // 从全局 Gist 读取（不使用缓存，确保数据最新）
     try {
         const gistId = localStorage.getItem(GLOBAL_GIST_KEY);
         if (!gistId) {
@@ -509,10 +502,6 @@ async function getReferrer(addr) {
         console.log('[QClaw] getReferrer 从Gist读取:', addr, '→', tree[addr] || 'null');
         console.log('[QClaw] 全局邀请树:', tree);
         
-        // 缓存到 localStorage
-        if (tree[addr]) {
-            localStorage.setItem('qclaw_ref_tree_' + addr, tree[addr]);
-        }
         return tree[addr] || null;
     } catch (e) {
         console.error('[QClaw] 读取邀请树失败:', e);
@@ -523,9 +512,6 @@ async function getReferrer(addr) {
 // 设置某地址的上级邀请人（写入全局 Gist）
 async function setReferrer(addr, referrer) {
     console.log('[QClaw] setReferrer:', addr, '→', referrer);
-    
-    // 缓存到 localStorage
-    localStorage.setItem('qclaw_ref_tree_' + addr, referrer);
     
     // 写入全局 Gist
     const token = await loadGistToken();
