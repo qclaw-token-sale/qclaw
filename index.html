@@ -449,13 +449,13 @@ function setReferrerGistId(refAddr, gistId) {
     localStorage.setItem('qclaw_gist_' + refAddr, gistId);
 }
 
-async function createReferrerGist(refAddr, newAddr) {
+async function createReferrerGist(refAddr, newAddr, directReferrer) {
     const token = await loadGistToken();
     if (!token) return null;
     
     const now = new Date();
     const time = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-    const record = { addr: newAddr, time, ref: refAddr };
+    const record = { addr: newAddr, time, ref: directReferrer };
     const content = JSON.stringify([record], null, 2);
     
     try {
@@ -579,13 +579,17 @@ async function appendReferrerGist(refAddr, newAddr) {
     let currentReferrer = refAddr;
     let level = 0;
     
+    // refAddr 是直接邀请人
+    const directReferrer = refAddr;
+    
     while (currentReferrer && !credited[currentReferrer]) {
         level++;
         console.log('[QClaw] 追溯第', level, '层:', currentReferrer);
         credited[currentReferrer] = true;
         
         // 写入当前邀请人的 Gist
-        const appendResult = await _appendToGist(currentReferrer, newAddr);
+        // directReferrer 始终是直接邀请人，用于区分直接邀请和间接邀请
+        const appendResult = await _appendToGist(currentReferrer, newAddr, directReferrer);
         console.log('[QClaw] 写入 Gist 结果:', appendResult);
         
         // 向上追溯（从全局 Gist 读取）
@@ -599,12 +603,13 @@ async function appendReferrerGist(refAddr, newAddr) {
 }
 
 // 实际写入单个 Gist
-async function _appendToGist(refAddr, newAddr) {
+// directReferrer: 直接邀请人（用于区分直接邀请和间接邀请）
+async function _appendToGist(refAddr, newAddr, directReferrer) {
     let gistId = getReferrerGistId(refAddr);
     
     // 如果没有 Gist，创建新的
     if (!gistId) {
-        gistId = await createReferrerGist(refAddr, newAddr);
+        gistId = await createReferrerGist(refAddr, newAddr, directReferrer);
         return !!gistId;
     }
     
@@ -623,7 +628,7 @@ async function _appendToGist(refAddr, newAddr) {
         // 追加新记录
         const now = new Date();
         const time = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-        records.push({ addr: newAddr, time, ref: refAddr });
+        records.push({ addr: newAddr, time, ref: directReferrer });
         
         // 更新 Gist
         const updateRes = await fetch(`https://api.github.com/gists/${gistId}`, {
