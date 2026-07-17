@@ -3,516 +3,803 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QClaw项目</title>
+    <title>QClaw · 空投申领</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1a1a2e;
+            background: #0d0d1a;
             color: #eee;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 16px;
         }
+        /* 背景光效 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -60%;
+            left: -20%;
+            width: 140%;
+            height: 80%;
+            background: radial-gradient(ellipse at center, rgba(107,79,216,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
         .card {
-            background: #16213e;
-            border-radius: 16px;
-            padding: 32px 28px;
+            background: #13132b;
+            border: 1px solid rgba(107,79,216,0.25);
+            border-radius: 20px;
+            padding: 28px 24px;
             width: 100%;
-            max-width: 420px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 440px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
         }
-        .card h1 { font-size: 22px; text-align: center; margin-bottom: 6px; color: #fff; }
-        .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 10px; }
+        /* 顶部装饰线 */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #e94560, #6b4fd8, transparent);
+        }
+
+        .card h1 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 2px;
+            background: linear-gradient(135deg, #e94560, #6b4fd8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            text-align: center;
+            color: #555;
+            font-size: 12px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* 钱包状态指示 */
+        .wallet-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0d0d20;
+            border: 1px solid #1e1e3a;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+        .wallet-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #333;
+            flex-shrink: 0;
+        }
+        .wallet-dot.ok { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+        .wallet-dot.loading { background: #facc15; box-shadow: 0 0 6px #facc15; animation: pulse 1s infinite; }
+        .wallet-dot.err { background: #f87171; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .wallet-addr { color: #888; }
+        .wallet-addr.active { color: #4cc9f0; }
+
+        /* 邀请人 banner */
         .referrer-banner {
-            background: #1a0d3b; border: 1px solid #6b4fd8;
-            border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
-            font-size: 13px; color: #a78bfa; text-align: center; display: none;
+            background: linear-gradient(135deg, #1a0d3b, #2d1b69);
+            border: 1px solid #6b4fd8;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #a78bfa;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s;
         }
         .referrer-banner.show { display: block; }
-        .contract-info {
-            background: #0f3460; border-radius: 10px; padding: 14px;
-            margin-bottom: 20px; font-size: 13px; line-height: 1.8;
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 合约信息卡片 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 18px;
         }
-        .contract-info .label { color: #888; }
-        .contract-info .value { color: #4cc9f0; word-break: break-all; font-size: 12px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; }
-        .input-row { display: flex; align-items: center; gap: 10px; }
+        .info-card {
+            background: #0d0d20;
+            border: 1px solid #1e1e3a;
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .info-card .label { color: #555; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .info-card .val { color: #4cc9f0; font-size: 14px; font-weight: 600; }
+        .info-card .val.accent { color: #e94560; }
+
+        /* 倒计时 */
+        .cd-bar {
+            background: #0d0d20;
+            border: 1px solid #1e1e3a;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+        }
+        .cd-bar .time {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e94560;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+
+        /* 输入区 */
+        .input-section { margin-bottom: 16px; }
+        .input-section label {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        .input-row {
+            display: flex;
+            align-items: center;
+            background: #0d0d20;
+            border: 1px solid #1e1e3a;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .input-row:focus-within { border-color: #6b4fd8; }
         .input-row input {
-            flex: 1; background: #0f3460; border: 1px solid #2a4a7a;
-            border-radius: 10px; padding: 14px 16px; font-size: 18px;
-            color: #fff; outline: none; text-align: right;
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 14px 16px;
+            font-size: 20px;
+            color: #fff;
+            outline: none;
+            text-align: right;
         }
-        .input-row input:focus { border-color: #4cc9f0; }
-        .unit { font-size: 18px; color: #888; }
+        .input-row .unit {
+            padding: 0 16px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        /* 预览 */
         .preview {
-            background: #0f3460; border-radius: 10px; padding: 16px;
-            margin-bottom: 20px; font-size: 14px; line-height: 1.9;
+            background: linear-gradient(135deg, rgba(107,79,216,0.1), rgba(233,69,96,0.1));
+            border: 1px solid rgba(107,79,216,0.2);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .preview .highlight { color: #4cc9f0; font-size: 16px; }
+        .preview .label { color: #555; font-size: 12px; }
+        .preview .amount {
+            font-size: 22px;
+            font-weight: bold;
+            color: #e94560;
+        }
+        .preview .amount span { font-size: 13px; color: #888; }
+
+        /* 主按钮 */
         .btn {
-            width: 100%; padding: 16px; border: none; border-radius: 12px;
-            font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #e94560, #b8274a);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
         }
-        .btn-red { background: linear-gradient(135deg, #e94560, #c23152); color: #fff; }
-        .btn:hover { transform: scale(1.01); }
-        .btn:active { transform: scale(0.99); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(233,69,96,0.35); }
+        .btn:active:not(:disabled) { transform: translateY(0); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; background: #333; }
+
+        .hint { text-align: center; color: #e94560; font-size: 11px; margin-bottom: 16px; display: none; }
+
+        /* 邀请按钮 */
         .btn-invite {
-            background: linear-gradient(135deg, #6b4fd8, #5a3fc0);
-            margin-top: 10px; font-size: 15px; padding: 13px; display: none;
+            background: linear-gradient(135deg, #6b4fd8, #4a35a0);
+            font-size: 14px;
+            padding: 12px;
+            display: none;
         }
         .btn-invite.show { display: block; }
+        .btn-invite:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(107,79,216,0.35); }
+
+        /* 状态 */
         .status {
-            margin-top: 16px; padding: 14px; border-radius: 10px;
-            font-size: 13px; display: none; word-break: break-all; line-height: 1.6;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            display: none;
+            line-height: 1.6;
+            word-break: break-all;
         }
-        .status.ok { background: #0d3b2e; color: #4ade80; display: block; }
-        .status.err { background: #3b0d14; color: #f87171; display: block; }
-        .status.info { background: #0f3460; color: #4cc9f0; display: block; }
+        .status.ok { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); color: #4ade80; }
+        .status.err { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); color: #f87171; }
+        .status.info { background: rgba(76,201,240,0.1); border: 1px solid rgba(76,201,240,0.2); color: #4cc9f0; }
         .status a { color: #4cc9f0; }
-        .invite-section { display: none; border-top: 1px solid #2a4a7a; padding-top: 16px; margin-top: 16px; }
-        .invite-section.show { display: block; }
-        .invite-section h3 { font-size: 15px; color: #a78bfa; margin-bottom: 12px; text-align: center; }
-        .referral-count { background: #1a0d3b; border-radius: 10px; padding: 12px; margin-bottom: 10px; text-align: center; }
-        .referral-count .count-num { font-size: 28px; font-weight: bold; color: #a78bfa; display: block; }
-        .referral-count .count-label { font-size: 12px; color: #888; display: block; margin-top: 2px; }
-        .invite-link-box { background: #0f3460; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-        .invite-link-box label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
-        .invite-link-row { display: flex; gap: 8px; align-items: center; }
-        .invite-link-row input {
-            flex: 1; background: #1a1a35; border: 1px solid #3a3a6a;
-            border-radius: 8px; padding: 10px 12px; color: #a5b4fc;
-            font-size: 12px; font-family: monospace;
+
+        /* ── 邀请专区 ── */
+        .invite-section {
+            border-top: 1px solid #1e1e3a;
+            padding-top: 16px;
+            margin-top: 16px;
+            display: none;
         }
-        .btn-copy { padding: 10px 16px; background: #6b4fd8; color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+        .invite-section.show { display: block; }
+
+        .invite-title {
+            font-size: 13px;
+            color: #6b4fd8;
+            text-align: center;
+            margin-bottom: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .count-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .count-box {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(107,79,216,0.12), rgba(107,79,216,0.04));
+            border: 1px solid rgba(107,79,216,0.2);
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+        .count-box .num {
+            font-size: 28px;
+            font-weight: bold;
+            color: #a78bfa;
+            display: block;
+        }
+        .count-box .desc {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .link-box {
+            background: #0d0d20;
+            border: 1px solid #1e1e3a;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .link-box label {
+            font-size: 10px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .link-row { display: flex; gap: 8px; }
+        .link-row input {
+            flex: 1;
+            background: #0a0a1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: #7c6fcd;
+            font-size: 11px;
+            font-family: monospace;
+        }
+        .btn-copy {
+            padding: 9px 14px;
+            background: #6b4fd8;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
         .btn-copy:hover { background: #5a3fc0; }
-        .share-btns { display: flex; gap: 8px; }
-        .share-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center; color: #fff; }
+
+        .share-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .share-btn {
+            flex: 1;
+            padding: 9px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+            color: #fff;
+        }
         .share-btn.tg { background: #2ca5e0; }
         .share-btn.tw { background: #1da1f2; }
         .share-btn:hover { opacity: 0.85; }
-        .refresh-btn {
-            display: block; margin: 10px auto 0; padding: 7px 16px;
-            background: #0f3460; border: 1px solid #2a4a7a; border-radius: 8px;
-            color: #888; font-size: 12px; cursor: pointer; width: 100%;
+
+        .btn-refresh {
+            width: 100%;
+            padding: 8px;
+            background: #0d0d20;
+            border: 1px solid #1e1e3a;
+            border-radius: 8px;
+            color: #555;
+            font-size: 12px;
+            cursor: pointer;
+            margin-bottom: 10px;
         }
-        .refresh-btn:hover { color: #4cc9f0; border-color: #4cc9f0; }
+        .btn-refresh:hover { color: #4cc9f0; border-color: #4cc9f0; }
+
+        .direct-list { margin-top: 10px; }
+        .direct-list .direct-title {
+            font-size: 10px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .direct-list .direct-item {
+            background: #0d0d20;
+            border: 1px solid #1e1e3a;
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        .direct-list .direct-addr { color: #4cc9f0; font-family: monospace; }
+        .direct-list .direct-time { color: #555; font-size: 11px; }
+
         .diag-box {
-            margin-top: 8px; background: #0d1a0d;
-            border: 1px solid #2a5a2a; border-radius: 8px;
-            padding: 10px; font-size: 11px; color: #7cfc7c;
-            font-family: monospace; display: none; word-break: break-all;
+            background: #0d1a0d;
+            border: 1px solid #2a5a2a;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 10px;
+            color: #7cfc7c;
+            font-family: monospace;
+            display: none;
+            word-break: break-all;
+            margin-top: 8px;
         }
         .diag-box.show { display: block; }
+
+        .retry-btn {
+            margin-top: 8px;
+            padding: 8px 16px;
+            background: rgba(76,201,240,0.15);
+            border: 1px solid rgba(76,201,240,0.3);
+            border-radius: 8px;
+            color: #4cc9f0;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .retry-btn:hover { background: rgba(76,201,240,0.25); }
     </style>
 </head>
 <body>
 <div class="card">
-    <h1>QClaw项目</h1>
-    <p class="subtitle">转账 TRX 即时兑换代币</p>
+    <h1>QClaw</h1>
+    <p class="subtitle">空投申领</p>
 
+    <!-- 钱包状态 -->
+    <div class="wallet-bar">
+        <div class="wallet-dot loading" id="walletDot"></div>
+        <span class="wallet-addr" id="walletAddr">正在连接钱包...</span>
+    </div>
+
+    <!-- 邀请人 -->
     <div class="referrer-banner" id="referrerBanner">
-        🎁 您的好友 <span id="referrerAddr" style="color:#a78bfa;font-family:monospace;"></span> 邀请您参与
+        🎁 您的好友 <strong id="referrerAddr" style="font-family:monospace;"></strong> 邀请您参与
     </div>
 
-    <div class="contract-info">
-        <div><span class="label">合约地址：</span><span class="value">TEFCHxSzdCBS1dLzWEo6QrTT73a4yCfibT</span></div>
-        <div><span class="label">基础汇率：</span>1 TRX = <strong>4</strong> QClaw</div>
-        <div><span class="label">额外奖励：</span>+2 QClaw / TRX（<span id="cdInline" style="color:#e94560;">限时</span>）</div>
-        <div><span class="label">我的钱包：</span><span id="walletAddr">连接中...</span></div>
+    <!-- 合约信息 -->
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="label">基础汇率</div>
+            <div class="val">1 TRX = <strong>4</strong> QClaw</div>
+        </div>
+        <div class="info-card">
+            <div class="label">额外奖励</div>
+            <div class="val accent">+2 QClaw / TRX</div>
+        </div>
     </div>
 
-    <div class="input-group">
-        <label>输入空投 TRX 数量</label>
+    <!-- 倒计时 -->
+    <div class="cd-bar">
+        活动剩余
+        <div class="time" id="cdInline">--:--:--:--</div>
+    </div>
+
+    <!-- 输入 -->
+    <div class="input-section">
+        <label>输入 TRX 数量（40 ~ 400）</label>
         <div class="input-row">
-            <input type="number" id="trxAmount" value="1" min="1" step="0.1" placeholder="1">
+            <input type="number" id="trxAmount" value="1" min="1" step="0.1">
             <span class="unit">TRX</span>
         </div>
     </div>
 
-    <div class="preview" id="preview">
-        预计获得：<span class="highlight" id="tokenOut">6</span> QClaw
+    <!-- 预览 -->
+    <div class="preview">
+        <span class="label">预计获得</span>
+        <span class="amount"><span id="tokenOut">6</span> <span>QClaw</span></span>
     </div>
 
-    <button class="btn btn-red" id="buyBtn" onclick="buyTokens()" disabled>获取空投</button>
-    <div id="onceNotice" style="display:none;text-align:center;color:#e94560;font-size:12px;margin-top:8px;">⚠️ 每个钱包地址仅可领取一次</div>
+    <!-- 主按钮 -->
+    <button class="btn" id="buyBtn" disabled>获取空投</button>
+    <div class="hint" id="onceHint">⚠️ 每个钱包地址仅可领取一次</div>
 
+    <!-- 邀请按钮 -->
     <button class="btn btn-invite" id="inviteBtn" onclick="toggleInvite()">🎁 邀请好友</button>
 
+    <!-- 状态 -->
+    <div class="status" id="statusBox"></div>
+
+    <!-- ── 邀请专区 ── -->
     <div class="invite-section" id="inviteSection">
-        <h3>🎁 我的邀请</h3>
-        <div class="referral-count" style="display:flex;gap:10px;align-items:center;">
-            <div style="flex:1;text-align:center;">
-                <span class="count-num" id="refCount">0</span>
-                <span class="count-label">直接邀请</span>
+        <div class="invite-title">— 我的邀请 —</div>
+
+        <div class="count-row">
+            <div class="count-box">
+                <span class="num" id="refCount">0</span>
+                <span class="desc">直接邀请</span>
             </div>
-            <div style="width:1px;background:#2a4a7a;height:40px;"></div>
-            <div style="flex:1;text-align:center;">
-                <span class="count-num" id="refCountAll">0</span>
-                <span class="count-label">全部层级</span>
+            <div class="count-box">
+                <span class="num" id="refCountAll">0</span>
+                <span class="desc">全部层级</span>
             </div>
         </div>
-        <div class="invite-link-box">
-            <label>您的邀请链接</label>
-            <div class="invite-link-row">
+
+        <div class="link-box">
+            <label>邀请链接</label>
+            <div class="link-row">
                 <input type="text" id="refLinkInput" readonly />
                 <button class="btn-copy" id="copyBtn" onclick="copyRefLink()">复制</button>
             </div>
         </div>
-        <div class="share-btns">
-            <button class="share-btn tg" onclick="shareTelegram()">📱 Telegram</button>
-            <button class="share-btn tw" onclick="shareTwitter()">🐦 Twitter/X</button>
+
+        <div class="share-row">
+            <button class="share-btn tg" onclick="shareTo('tg')">📱 Telegram</button>
+            <button class="share-btn tw" onclick="shareTo('tw')">🐦 Twitter/X</button>
         </div>
-        <button class="refresh-btn" id="refreshBtn" onclick="refreshPage()">🔄 刷新数量</button>
-        <div id="directRefBox" style="display:none;margin-top:12px;">
-            <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">直接邀请</div>
+
+        <button class="btn-refresh" id="refreshBtn" onclick="refreshInvite()">🔄 刷新数量</button>
+
+        <div class="direct-list" id="directRefBox" style="display:none;">
+            <div class="direct-title">直接邀请记录</div>
             <div id="directRefList"></div>
         </div>
-        <div id="diagBox" class="diag-box"></div>
-    </div>
 
-    <div class="status" id="statusBox"></div>
+        <div class="diag-box" id="diagBox"></div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js"></script>
 <script>
-    // ── 倒计时 ────────────────────────────────────────
-    const END_DATE = new Date('2026-08-17T00:00:00+08:00');
-    function updateCountdown() {
-        const now = new Date();
-        const diff = END_DATE - now;
-        if (diff <= 0) { document.getElementById('cdInline').textContent = '已结束'; return; }
-        const days = Math.floor(diff / 86400000);
-        const hours = Math.floor((diff % 86400000) / 3600000);
-        const mins  = Math.floor((diff % 3600000) / 60000);
-        const secs  = Math.floor((diff % 60000) / 1000);
-        const pad = n => String(n).padStart(2, '0');
-        document.getElementById('cdInline').textContent =
-            pad(days) + '天' + pad(hours) + '时' + pad(mins) + '分' + pad(secs) + '后结束';
-    }
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+// ═══════════════════════════════════════════════
+//  常量
+// ═══════════════════════════════════════════════
+const CONTRACT_HEX = '412ee69124a85ecee19772c71f2cc5614423e18fa5';
+const RATE = 4, BONUS = 2;
+const TRONGRID = 'https://api.trongrid.io';
+const PAGE_URL = 'https://qclaw-token-sale.github.io/qclaw/';
+const END_DATE = new Date('2026-08-17T00:00:00+08:00');
 
-    // ── 常量 ──────────────────────────────────────────
-    const CONTRACT_HEX = '412ee69124a85ecee19772c71f2cc5614423e18fa5';
-    const RATE = 4, BONUS = 2;
-    const TRONGRID_API = 'https://api.trongrid.io';
-    const PAGE_URL = 'https://qclaw-token-sale.github.io/qclaw/';
+// ═══════════════════════════════════════════════
+//  状态
+// ═══════════════════════════════════════════════
+let tronWeb = null, myAddr = null, currentRef = null;
+let walletReady = false;
 
-    let tronWeb = null, connected = false, myAddr = null;
-    let currentRef = null; // 直接邀请人
+// ═══════════════════════════════════════════════
+//  倒计时
+// ═══════════════════════════════════════════════
+function updateCountdown() {
+    const diff = END_DATE - Date.now();
+    const el = document.getElementById('cdInline');
+    if (diff <= 0) { el.textContent = '已结束'; return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    el.textContent = `${String(d).padStart(2,'0')}天${String(h).padStart(2,'0')}时${String(m).padStart(2,'0')}分${String(s).padStart(2,'0')}秒`;
+}
+setInterval(updateCountdown, 1000);
 
-    // ── 存储 ──────────────────────────────────────────
-    // key: 'qclaw_direct_ref_' + addr  → 值：该地址的直接邀请人
-    // key: 'qclaw_claimed_addr'         → 值：当前浏览器已领取的钱包地址
+// ═══════════════════════════════════════════════
+//  存储
+// ═══════════════════════════════════════════════
+const S = {
+    claimed: addr => localStorage.getItem('qclaw_claimed_' + addr),
+    setClaimed: addr => { localStorage.setItem('qclaw_claimed_addr', addr); localStorage.setItem('qclaw_claimed_' + addr, '1'); },
+    count: addr => { try { return JSON.parse(localStorage.getItem('qclaw_count_' + addr) || '[]').length; } catch { return 0; } },
+    direct: addr => { try { return JSON.parse(localStorage.getItem('qclaw_direct_' + addr) || '[]'); } catch { return []; } },
+    myRef: addr => localStorage.getItem('qclaw_direct_ref_' + addr) || null,
+    setMyRef: (addr, ref) => localStorage.setItem('qclaw_direct_ref_' + addr, ref),
+};
 
-    function getMyRef() {
-        // 该用户所有层级的直接referrer（仅最顶层）
-        return localStorage.getItem('qclaw_direct_ref_' + (myAddr || '')) || null;
-    }
-
-    function getRefCount(addr) {
+// 领取成功后：记录直接邀请人 + 往上所有层级 +1
+function recordClaim(newAddr, myRefAddr) {
+    if (!myRefAddr) return;
+    // 记录自己的直接邀请人
+    S.setMyRef(newAddr, myRefAddr);
+    // 往上所有层级 +1
+    const credited = {};
+    let ref = myRefAddr;
+    while (ref && !credited[ref]) {
+        credited[ref] = true;
         try {
-            return JSON.parse(localStorage.getItem('qclaw_count_' + addr) || '[]').length;
-        } catch { return 0; }
+            const list = JSON.parse(localStorage.getItem('qclaw_count_' + ref) || '[]');
+            if (!list.includes(newAddr)) { list.push(newAddr); localStorage.setItem('qclaw_count_' + ref, JSON.stringify(list)); }
+        } catch (_) {}
+        ref = S.myRef(ref);
     }
-
-    function getDirectRefs(addr) {
-        // 仅直接邀请人列表（用于显示地址+时间）
-        try {
-            return JSON.parse(localStorage.getItem('qclaw_direct_' + addr) || '[]');
-        } catch { return []; }
-    }
-
-    function propagateClaim(newAddr) {
-        // 遍历所有层级往上加分
-        let referrer = getMyRef(); // 当前领取人的直接邀请人
-        const credited = {};
-        while (referrer && !credited[referrer]) {
-            credited[referrer] = true;
-            try {
-                const list = JSON.parse(localStorage.getItem('qclaw_count_' + referrer) || '[]');
-                if (!list.includes(newAddr)) {
-                    list.push(newAddr);
-                    localStorage.setItem('qclaw_count_' + referrer, JSON.stringify(list));
-                }
-            } catch (_) {}
-            // 再往上查该referrer的直接邀请人
-            referrer = localStorage.getItem('qclaw_direct_ref_' + referrer) || null;
+    // 邀请人的直接列表记录
+    try {
+        const direct = S.direct(myRefAddr);
+        if (!direct.some(r => r.addr === newAddr)) {
+            direct.unshift({ addr: newAddr, time: new Date().toLocaleString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) });
+            localStorage.setItem('qclaw_direct_' + myRefAddr, JSON.stringify(direct));
         }
+    } catch (_) {}
+}
+
+// ═══════════════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════════════
+function setWalletState(state, text) {
+    const dot = document.getElementById('walletDot');
+    const addr = document.getElementById('walletAddr');
+    dot.className = 'wallet-dot ' + (state || '');
+    addr.textContent = text;
+    addr.className = 'wallet-addr' + (state === 'ok' ? ' active' : '');
+}
+
+function showStatus(type, html) {
+    const el = document.getElementById('statusBox');
+    el.className = 'status ' + type;
+    el.innerHTML = html;
+    el.style.display = 'block';
+}
+
+function setBtn(text, disabled) {
+    const btn = document.getElementById('buyBtn');
+    btn.textContent = text;
+    btn.disabled = disabled;
+}
+
+function setClaimedUI() {
+    setBtn('已领取', true);
+    document.getElementById('buyBtn').style.opacity = '0.4';
+    document.getElementById('onceHint').style.display = 'block';
+    document.getElementById('trxAmount').disabled = true;
+    document.getElementById('referrerBanner').classList.remove('show');
+    document.getElementById('inviteBtn').classList.add('show');
+    document.getElementById('inviteSection').classList.add('show');
+    document.getElementById('referrerBanner').classList.remove('show');
+    refreshInvite();
+}
+
+function updatePreview() {
+    const v = parseFloat(document.getElementById('trxAmount').value) || 0;
+    document.getElementById('tokenOut').textContent = Math.floor(v * (RATE + BONUS)).toLocaleString();
+    const claimed = myAddr && S.claimed(myAddr);
+    setBtn('获取空投', (!walletReady && !myAddr) || (v <= 40 || v >= 400) || !!claimed);
+}
+
+// ═══════════════════════════════════════════════
+//  邀请
+// ═══════════════════════════════════════════════
+function refreshInvite() {
+    if (!myAddr) return;
+    document.getElementById('refCount').textContent = S.direct(myAddr).length;
+    document.getElementById('refCountAll').textContent = S.count(myAddr);
+
+    const direct = S.direct(myAddr);
+    const box = document.getElementById('directRefBox');
+    if (direct.length === 0) {
+        box.style.display = 'none';
+    } else {
+        box.style.display = 'block';
+        document.getElementById('directRefList').innerHTML = direct.map(r =>
+            `<div class="direct-item">
+                <span class="direct-addr">${r.addr.slice(0,6)}...${r.addr.slice(-4)}</span>
+                <span class="direct-time">${r.time}</span>
+            </div>`
+        ).join('');
     }
 
-    function markClaimed(addr) {
-        localStorage.setItem('qclaw_claimed_addr', addr);
-        localStorage.setItem('qclaw_claimed_' + addr, '1');
+    // 诊断
+    const diag = document.getElementById('diagBox');
+    const c = localStorage.getItem('qclaw_count_' + myAddr) || '[]';
+    const d = localStorage.getItem('qclaw_direct_' + myAddr) || '[]';
+    const r = S.myRef(myAddr) || '无';
+    diag.innerHTML = '全部层级：' + c + '<br>直接邀请：' + d + '<br>我的邀请人：' + r;
+    diag.classList.add('show');
+}
+
+function toggleInvite() {
+    const sec = document.getElementById('inviteSection');
+    sec.classList.toggle('show');
+    if (sec.classList.contains('show')) refreshInvite();
+}
+
+function copyRefLink() {
+    const v = document.getElementById('refLinkInput').value;
+    const btn = document.getElementById('copyBtn');
+    const ok = navigator.clipboard ? navigator.clipboard.writeText(v) : null;
+    btn.textContent = '已复制!';
+    setTimeout(() => btn.textContent = '复制', 2000);
+}
+
+function shareTo(platform) {
+    const link = encodeURIComponent(document.getElementById('refLinkInput').value);
+    const text = encodeURIComponent('🎁 领取 QClaw 空投！使用我的邀请链接：' + link);
+    if (platform === 'tg') window.open('https://t.me/share/url?url=' + link + '&text=' + text, '_blank');
+    else window.open('https://twitter.com/intent/tweet?text=' + text, '_blank');
+}
+
+// ═══════════════════════════════════════════════
+//  钱包连接（适配 TP / TronLink / 通用浏览器）
+// ═══════════════════════════════════════════════
+async function connectWallet() {
+    if (typeof TronWeb === 'undefined') {
+        setWalletState('err', 'TronWeb 未加载，请在 TP 钱包 DApp 浏览器打开');
+        showStatus('err', 'TronWeb 未加载，请用 TP 钱包或 TronLink 钱包的 DApp 浏览器打开此页面');
+        return;
     }
 
-    function alreadyClaimed(addr) {
-        return !!localStorage.getItem('qclaw_claimed_' + addr);
+    // 优先 TP 钱包：tronLink.tronWeb
+    if (window.tronLink && window.tronLink.tronWeb) {
+        tronWeb = window.tronLink.tronWeb;
+    } else if (window.tronLink) {
+        try { await window.tronLink.request({ method: 'tron_requestAccounts' }); } catch (_) {}
+        tronWeb = window.tronWeb || window.tronLink;
+    } else if (window.tronWeb) {
+        tronWeb = window.tronWeb;
+    } else {
+        tronWeb = new TronWeb(TRONGRID, TRONGRID, TRONGRID);
     }
 
-    // ── 邀请工具 ─────────────────────────────────────
-    function getRefLink(addr) {
-        return PAGE_URL + '?ref=' + encodeURIComponent(addr);
-    }
-
-    function copyRefLink() {
-        const link = document.getElementById('refLinkInput').value;
-        const btn = document.getElementById('copyBtn');
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(link).then(() => { btn.textContent = '已复制!'; setTimeout(() => btn.textContent = '复制', 2000); });
-        } else {
-            const ta = document.createElement('textarea'); ta.value = link;
-            document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-            document.body.removeChild(ta);
-            btn.textContent = '已复制!'; setTimeout(() => btn.textContent = '复制', 2000);
+    // 等待地址就绪（最多 15 秒）
+    for (let i = 0; i < 30; i++) {
+        const da = tronWeb && tronWeb.defaultAddress;
+        let addr = da && (da.base58 || da.hex);
+        if (!addr && da && da.hex && da.hex.startsWith('41')) {
+            try { addr = tronWeb.address.fromHex(da.hex); } catch (_) {}
         }
-    }
-
-    function shareTelegram() {
-        const link = encodeURIComponent(document.getElementById('refLinkInput').value);
-        const text = encodeURIComponent('🎁 参与 QClaw 空投！使用我的邀请链接：' + link);
-        window.open('https://t.me/share/url?url=' + link + '&text=' + text, '_blank');
-    }
-
-    function shareTwitter() {
-        const link = encodeURIComponent(document.getElementById('refLinkInput').value);
-        const text = encodeURIComponent('🎁 参与 QClaw 空投！使用我的邀请链接：' + link);
-        window.open('https://twitter.com/intent/tweet?text=' + text, '_blank');
-    }
-
-    function toggleInvite() {
-        const sec = document.getElementById('inviteSection');
-        if (sec.classList.contains('show')) {
-            sec.classList.remove('show');
-        } else {
-            sec.classList.add('show');
-            refreshRefCount();
-        }
-    }
-
-    function refreshRefCount() {
-        document.getElementById('refCount').textContent = getDirectRefs(myAddr || '').length;
-        document.getElementById('refCountAll').textContent = getRefCount(myAddr || '');
-        // 直接邀请列表（显示地址+时间）
-        const direct = getDirectRefs(myAddr || '');
-        const box = document.getElementById('directRefBox');
-        const list = document.getElementById('directRefList');
-        if (direct.length === 0) {
-            box.style.display = 'none';
+        const valid = addr && addr !== '41' && addr.length >= 34;
+        if (valid) {
+            myAddr = addr;
+            walletReady = true;
+            document.getElementById('refLinkInput').value = PAGE_URL + '?ref=' + encodeURIComponent(myAddr);
+            setWalletState('ok', myAddr);
+            if (S.claimed(myAddr)) setClaimedUI();
+            updatePreview();
             return;
         }
-        box.style.display = 'block';
-        list.innerHTML = '<div style="background:#0f3460;border-radius:8px;padding:10px;">' +
-            direct.map(r =>
-                '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a2a4a;font-size:12px;color:#aaa;">' +
-                    '<span style="color:#4cc9f0;font-family:monospace;">' + r.addr.slice(0,6) + '...' + r.addr.slice(-4) + '</span>' +
-                    '<span style="color:#888;font-size:11px;">' + r.time + '</span>' +
-                '</div>'
-            ).join('') + '</div>';
+        await new Promise(r => setTimeout(r, 500));
     }
 
-    // ── 钱包连接检测 ─────────────────────────────────
-    // TP 钱包专用连接（处理多种地址格式）
-    async function tryConnectWallet() {
-        if (typeof TronWeb === 'undefined') {
-            showStatus('err', '⚠️ TronWeb 未加载，请在 TP 钱包的 DApp 浏览器中打开此页面');
-            return false;
+    // 失败
+    const da = tronWeb && tronWeb.defaultAddress;
+    const hint = da ? JSON.stringify(da) : '无地址信息';
+    setWalletState('err', '钱包连接失败');
+    showStatus('err',
+        '⚠️ 无法连接钱包，请确认：\n' +
+        '1. 使用 TP 钱包 / TronLink 钱包的 DApp 浏览器打开\n' +
+        '2. 钱包已解锁\n' +
+        '3. 已授权此 DApp\n' +
+        '<br>调试：' + hint +
+        '<br><button class="retry-btn" onclick="connectWallet()">🔄 重试连接</button>'
+    );
+}
+
+// ═══════════════════════════════════════════════
+//  初始化
+// ═══════════════════════════════════════════════
+async function init() {
+    updateCountdown();
+
+    // 解析邀请人
+    const params = new URLSearchParams(location.search);
+    const ref = params.get('ref');
+    if (ref) {
+        const claimed = localStorage.getItem('qclaw_claimed_addr');
+        if (ref !== claimed) {
+            currentRef = ref;
+            document.getElementById('referrerBanner').classList.add('show');
+            document.getElementById('referrerAddr').textContent = ref.slice(0,6) + '...' + ref.slice(-4);
         }
-
-        // TP 钱包：window.tronLink.tronWeb 是预置好的 tronWeb 实例
-        if (window.tronLink && window.tronLink.tronWeb) {
-            tronWeb = window.tronLink.tronWeb;
-        } else if (window.tronLink) {
-            // 尝试直接用 tronLink
-            try { await window.tronLink.request({ method: 'tron_requestAccounts' }); } catch (_) {}
-            tronWeb = window.tronWeb || window.tronLink;
-        } else if (window.tronWeb) {
-            tronWeb = window.tronWeb;
-        } else {
-            tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
-        }
-
-        // TP 钱包：defaultAddress 可能是 { hex, base58 } 两个都有，也可能只有 hex
-        let attempts = 0;
-        while (attempts < 30) {
-            const da = tronWeb && tronWeb.defaultAddress;
-            // base58 格式（标准）
-            let addr = da && (da.base58 || da.hex);
-            // hex 转 base58（如果只有 hex）
-            if (!addr && da && da.hex && da.hex.startsWith('41')) {
-                try {
-                    addr = tronWeb.address.fromHex(da.hex);
-                } catch (_) {}
-            }
-            if (addr && addr !== '41'.padEnd(42, '0') && addr !== '41AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') {
-                myAddr = (addr.length === 34) ? addr : addr; // base58 34位
-                document.getElementById('walletAddr').textContent = myAddr;
-                document.getElementById('refLinkInput').value = getRefLink(myAddr);
-                connected = true;
-                refreshRefCount();
-                if (alreadyClaimed(myAddr)) {
-                    document.getElementById('buyBtn').textContent = '已领取过';
-                    document.getElementById('buyBtn').style.background = '#555';
-                    document.getElementById('buyBtn').disabled = true;
-                    document.getElementById('onceNotice').style.display = 'block';
-                    document.getElementById('trxAmount').disabled = true;
-                    document.getElementById('inviteBtn').classList.add('show');
-                    document.getElementById('inviteSection').classList.add('show');
-                    document.getElementById('referrerBanner').classList.remove('show');
-                }
-                return true;
-            }
-            await new Promise(r => setTimeout(r, 500));
-            attempts++;
-        }
-
-        // 调试信息
-        const da = tronWeb && tronWeb.defaultAddress;
-        let debugInfo = '';
-        if (da) debugInfo = '<br><span style="font-size:11px;color:#888;">调试：' + JSON.stringify(da) + '</span>';
-        showStatus('err', '⚠️ 钱包连接失败，请确认 TP 钱包已解锁并在此 DApp 页面点击"授权"',
-            '<br><button onclick="tryConnectWallet()" style="margin-top:8px;padding:8px 16px;background:#4cc9f0;border:none;border-radius:8px;color:#fff;cursor:pointer;">重试连接</button>' + debugInfo);
-        document.getElementById('walletAddr').textContent = '连接失败';
-        return false;
-    }
-
-    async function init() {
-        updatePreview();
-
-        // 解析 URL 中的直接邀请人
-        const params = new URLSearchParams(window.location.search);
-        const ref = params.get('ref');
-        if (ref) {
-            const claimed = localStorage.getItem('qclaw_claimed_addr');
-            if (ref !== claimed) {
-                currentRef = ref;
-                document.getElementById('referrerBanner').classList.add('show');
-                document.getElementById('referrerAddr').textContent =
-                    ref.slice(0, 6) + '...' + ref.slice(-4);
-            }
-        }
-
-        document.getElementById('walletAddr').textContent = '连接中...';
-        await tryConnectWallet();
-    }
-
-    function updatePreview() {
-        const val = parseFloat(document.getElementById('trxAmount').value) || 0;
-        const tokens = Math.floor(val * (RATE + BONUS));
-        document.getElementById('tokenOut').textContent = tokens.toLocaleString();
-        const claimed = !!localStorage.getItem('qclaw_claimed_addr');
-        document.getElementById('buyBtn').disabled = (val <= 40 || val >= 400) || claimed;
     }
 
     document.getElementById('trxAmount').addEventListener('input', updatePreview);
+    await connectWallet();
 
-    // 刷新邀请数量（重新从 localStorage 读取）
-    function refreshPage() {
-        if (myAddr) {
-            refreshRefCount();
-            const diag = document.getElementById('diagBox');
-            const myCount = localStorage.getItem('qclaw_count_' + myAddr) || '[]';
-            const myDirect = localStorage.getItem('qclaw_direct_' + myAddr) || '[]';
-            const myRef = localStorage.getItem('qclaw_direct_ref_' + myAddr) || '';
-            diag.innerHTML = '全部层级：' + myCount + '<br>直接邀请：' + myDirect + '<br>我的邀请人：' + (myRef || '无');
-            diag.classList.add('show');
-            const btn = document.getElementById('refreshBtn');
-            btn.textContent = '🔄 已刷新';
-            setTimeout(() => { btn.textContent = '🔄 刷新数量'; }, 3000);
-        }
-    }
-
-    // 每 5 秒自动刷新邀请数量（邀请区打开时）
+    // 邀请区每 5 秒自动刷新
     setInterval(() => {
         if (myAddr && document.getElementById('inviteSection').classList.contains('show')) {
-            refreshRefCount();
+            document.getElementById('refCount').textContent = S.direct(myAddr).length;
+            document.getElementById('refCountAll').textContent = S.count(myAddr);
         }
     }, 5000);
+}
 
-    // ── 领取 ─────────────────────────────────────────
-    async function buyTokens() {
-        if (!connected || !tronWeb) { showStatus('err', '请先连接钱包'); return; }
-        const amount = parseFloat(document.getElementById('trxAmount').value);
-        if (!amount || amount <= 0) { showStatus('err', '请输入有效的 TRX 数量'); return; }
+// ═══════════════════════════════════════════════
+//  领取
+// ═══════════════════════════════════════════════
+async function buyTokens() {
+    if (!walletReady || !tronWeb || !myAddr) {
+        showStatus('err', '钱包未连接，请刷新页面后重试');
+        return;
+    }
+    const amount = parseFloat(document.getElementById('trxAmount').value);
+    if (!amount || amount <= 0) { showStatus('err', '请输入有效的 TRX 数量'); return; }
+    if (amount <= 40 || amount >= 400) { showStatus('err', 'TRX 数量需在 40 ~ 400 之间'); return; }
 
-        const btn = document.getElementById('buyBtn');
-        btn.disabled = true;
-        btn.textContent = '处理中...';
-        showStatus('info', '正在发送交易，请在新窗口确认签名...');
+    setBtn('处理中...', true);
+    showStatus('info', '请在钱包中确认并签名交易...');
 
-        let result = null;
-        try {
-            const trxSun = Math.floor(amount * 1000000);
-            const tx = await tronWeb.transactionBuilder.triggerSmartContract(
-                CONTRACT_HEX, 'claimReward()',
-                { callValue: trxSun, feeLimit: 100_000_000 },
-                [], tronWeb.address.toHex(myAddr)
+    let result = null;
+    try {
+        const sun = Math.floor(amount * 1e6);
+        const tx = await tronWeb.transactionBuilder.triggerSmartContract(
+            CONTRACT_HEX, 'claimReward()',
+            { callValue: sun, feeLimit: 1e8 },
+            [], tronWeb.address.toHex(myAddr)
+        );
+        const signed = await tronWeb.trx.sign(tx.transaction);
+        result = await tronWeb.trx.sendRawTransaction(signed);
+
+        if (result.result) {
+            S.setClaimed(myAddr);
+            if (currentRef) recordClaim(myAddr, currentRef);
+            setClaimedUI();
+            showStatus('ok',
+                '🎉 申领成功！<br>' +
+                'Tx: <a href="https://tronscan.org/#/transaction/' + result.txid + '" target="_blank" style="color:#4cc9f0;font-size:11px;">' + result.txid.slice(0,16) + '...</a><br>' +
+                '<span style="font-size:12px;">✨ 感谢参与！快去邀请好友吧！</span>'
             );
-            const signedTx = await tronWeb.trx.sign(tx.transaction);
-            result = await tronWeb.trx.sendRawTransaction(signedTx);
-
-            if (result.result) {
-                // 标记自己已领取
-                markClaimed(myAddr);
-
-                // 如果有直接邀请人 → 记录自己和往上所有层级
-                if (currentRef) {
-                    // 当前用户的直接邀请人记录
-                    localStorage.setItem('qclaw_direct_ref_' + myAddr, currentRef);
-                    // 往上所有层级 +1
-                    propagateClaim(myAddr);
-                    // 记录直接邀请人（用于显示地址+时间）
-                    try {
-                        const direct = getDirectRefs(currentRef);
-                        if (!direct.some(r => r.addr === myAddr)) {
-                            direct.unshift({ addr: myAddr, time: new Date().toLocaleString('zh-CN') });
-                            localStorage.setItem('qclaw_direct_' + currentRef, JSON.stringify(direct));
-                        }
-                    } catch (_) {}
-                }
-
-                // UI 更新
-                btn.textContent = '已领取';
-                btn.style.background = '#555';
-                btn.disabled = true;
-                document.getElementById('onceNotice').style.display = 'block';
-                document.getElementById('trxAmount').disabled = true;
-                document.getElementById('referrerBanner').classList.remove('show');
-                document.getElementById('inviteBtn').classList.add('show');
-                document.getElementById('inviteSection').classList.add('show');
-                refreshRefCount();
-
-                showStatus('ok',
-                    '🎉 获取成功！<br>' +
-                    'TxID: <a href="https://tronscan.org/#/transaction/' + result.txid + '" target="_blank" style="color:#4cc9f0;font-size:12px;">' + result.txid.substring(0,20) + '...</a><br>' +
-                    '<span style="color:#4ade80;font-size:13px;">✨ 感谢参与！快去邀请好友吧！</span>'
-                );
-            } else {
-                showStatus('err', '交易失败: ' + JSON.stringify(result));
-            }
-        } catch (err) {
-            let msg = (err.message || String(err)).replace(/at async.*$/gm, '').trim();
-            if (msg.length > 300) msg = msg.substring(0, 300) + '...';
-            showStatus('err', '错误: ' + msg);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = '获取空投';
+        } else {
+            setBtn('获取空投', false);
+            showStatus('err', '交易失败，请重试');
         }
+    } catch (err) {
+        setBtn('获取空投', false);
+        let msg = (err.message || String(err)).replace(/at async.*$/gm, '').trim();
+        showStatus('err', '错误：' + (msg.length > 200 ? msg.slice(0,200) + '...' : msg));
     }
+}
 
-    function showStatus(type, msg, extraHtml) {
-        const el = document.getElementById('statusBox');
-        el.className = 'status ' + type;
-        el.innerHTML = msg + (extraHtml || '');
-        el.style.display = 'block';
-    }
-
-    init();
+document.getElementById('buyBtn').addEventListener('click', buyTokens);
+init();
 </script>
 </body>
 </html>
