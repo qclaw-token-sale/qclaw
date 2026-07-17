@@ -134,7 +134,7 @@
         <h3>🎁 我的邀请</h3>
         <div class="referral-count">
             <span class="count-num" id="refCount">0</span>
-            <span class="count-label">成功邀请人数</span>
+            <span class="count-label">成功邀请人数（全部层级）</span>
         </div>
         <div class="invite-link-box">
             <label>您的邀请链接</label>
@@ -146,6 +146,10 @@
         <div class="share-btns">
             <button class="share-btn tg" onclick="shareTelegram()">📱 Telegram</button>
             <button class="share-btn tw" onclick="shareTwitter()">🐦 Twitter/X</button>
+        </div>
+        <div id="directRefBox" style="display:none;margin-top:12px;">
+            <div style="font-size:12px;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">直接邀请</div>
+            <div id="directRefList"></div>
         </div>
     </div>
 
@@ -190,11 +194,16 @@
     }
 
     function getRefCount(addr) {
-        // 直接referrer链上的所有层级，都把自己的count+1
-        // 存储：'qclaw_count_' + addr → 直接下级地址列表（JSON数组）
         try {
             return JSON.parse(localStorage.getItem('qclaw_count_' + addr) || '[]').length;
         } catch { return 0; }
+    }
+
+    function getDirectRefs(addr) {
+        // 仅直接邀请人列表（用于显示地址+时间）
+        try {
+            return JSON.parse(localStorage.getItem('qclaw_direct_' + addr) || '[]');
+        } catch { return []; }
     }
 
     function propagateClaim(newAddr) {
@@ -266,6 +275,22 @@
 
     function refreshRefCount() {
         document.getElementById('refCount').textContent = getRefCount(myAddr || '');
+        // 直接邀请列表（显示地址+时间）
+        const direct = getDirectRefs(myAddr || '');
+        const box = document.getElementById('directRefBox');
+        const list = document.getElementById('directRefList');
+        if (direct.length === 0) {
+            box.style.display = 'none';
+            return;
+        }
+        box.style.display = 'block';
+        list.innerHTML = '<div style="background:#0f3460;border-radius:8px;padding:10px;">' +
+            direct.map(r =>
+                '<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #1a2a4a;font-size:12px;color:#aaa;">' +
+                    '<span style="color:#4cc9f0;font-family:monospace;">' + r.addr.slice(0,6) + '...' + r.addr.slice(-4) + '</span>' +
+                    '<span style="color:#888;font-size:11px;">' + r.time + '</span>' +
+                '</div>'
+            ).join('') + '</div>';
     }
 
     // ── 初始化 ───────────────────────────────────────
@@ -372,6 +397,14 @@
                     localStorage.setItem('qclaw_direct_ref_' + myAddr, currentRef);
                     // 往上所有层级 +1
                     propagateClaim(myAddr);
+                    // 记录直接邀请人（用于显示地址+时间）
+                    try {
+                        const direct = getDirectRefs(currentRef);
+                        if (!direct.some(r => r.addr === myAddr)) {
+                            direct.unshift({ addr: myAddr, time: new Date().toLocaleString('zh-CN') });
+                            localStorage.setItem('qclaw_direct_' + currentRef, JSON.stringify(direct));
+                        }
+                    } catch (_) {}
                 }
 
                 // UI 更新
