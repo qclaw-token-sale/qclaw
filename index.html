@@ -480,19 +480,92 @@ async function createReferrerGist(refAddr, newAddr) {
 }
 
 // ═══════════════════════════════════════════════
-//  多层级邀请系统
+//  多层级邀请系统（邀请关系存储在 Gist）
 // ═══════════════════════════════════════════════
 
-// 存储每个人的上级邀请人（用于多层级追溯）
-const RefTree = {
-    get: addr => localStorage.getItem('qclaw_ref_tree_' + addr),
-    set: (addr, referrer) => localStorage.setItem('qclaw_ref_tree_' + addr, referrer)
-};
+// 获取某地址的上级邀请人（从全局 Gist 读取）
+const GLOBAL_GIST_KEY = 'qclaw_global_ref_tree';
+
+async function getReferrer(addr) {
+    // 先尝试从 localStorage 缓存读取
+    const cached = localStorage.getItem('qclaw_ref_tree_' + addr);
+    if (cached) return cached;
+    
+    // 从全局 Gist 读取
+    try {
+        const gistId = localStorage.getItem(GLOBAL_GIST_KEY);
+        if (!gistId) return null;
+        
+        const res = await fetch(`https://api.github.com/gists/${gistId}`);
+        const data = await res.json();
+        const content = data.files['ref_tree.json']?.content || '{}';
+        const tree = JSON.parse(content);
+        
+        // 缓存到 localStorage
+        if (tree[addr]) {
+            localStorage.setItem('qclaw_ref_tree_' + addr, tree[addr]);
+        }
+        return tree[addr] || null;
+    } catch (e) {
+        console.error('[QClaw] 读取邀请树失败:', e);
+        return null;
+    }
+}
+
+// 设置某地址的上级邀请人（写入全局 Gist）
+async function setReferrer(addr, referrer) {
+    // 缓存到 localStorage
+    localStorage.setItem('qclaw_ref_tree_' + addr, referrer);
+    
+    // 写入全局 Gist
+    const token = await loadGistToken();
+    if (!token) return false;
+    
+    try {
+        let gistId = localStorage.getItem(GLOBAL_GIST_KEY);
+        let tree = {};
+        
+        if (gistId) {
+            const res = await fetch(`https://api.github.com/gists/${gistId}`);
+            const data = await res.json();
+            const content = data.files['ref_tree.json']?.content || '{}';
+            tree = JSON.parse(content);
+        }
+        
+        tree[addr] = referrer;
+        
+        if (gistId) {
+            await fetch(`https://api.github.com/gists/${gistId}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files: { 'ref_tree.json': { content: JSON.stringify(tree, null, 2) } } })
+            });
+        } else {
+            const res = await fetch('https://api.github.com/gists', {
+                method: 'POST',
+                headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    description: 'QClaw 全局邀请关系树',
+                    public: true,
+                    files: { 'ref_tree.json': { content: JSON.stringify(tree, null, 2) } }
+                })
+            });
+            const data = await res.json();
+            if (data.id) {
+                localStorage.setItem(GLOBAL_GIST_KEY, data.id);
+            }
+        }
+        return true;
+    } catch (e) {
+        console.error('[QClaw] 写入邀请树失败:', e);
+        return false;
+    }
+}
 
 // 追加邀请记录（支持多层级）
 async function appendReferrerGist(refAddr, newAddr) {
-    // 1. 记录 newAddr 的上级邀请人
-    RefTree.set(newAddr, refAddr);
+    // 1. 记录 newAddr 的上级邀请人（写入全局 Gist）
+    await setReferrer(newAddr, refAddr);
     
     // 2. 追溯整个邀请链，给每个人都加分
     const credited = {};
@@ -504,8 +577,8 @@ async function appendReferrerGist(refAddr, newAddr) {
         // 写入当前邀请人的 Gist
         await _appendToGist(currentReferrer, newAddr);
         
-        // 向上追溯
-        currentReferrer = RefTree.get(currentReferrer);
+        // 向上追溯（从全局 Gist 读取）
+        currentReferrer = await getReferrer(currentReferrer);
     }
     
     return true;
