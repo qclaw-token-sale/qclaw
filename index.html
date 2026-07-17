@@ -489,17 +489,25 @@ const GLOBAL_GIST_KEY = 'qclaw_global_ref_tree';
 async function getReferrer(addr) {
     // 先尝试从 localStorage 缓存读取
     const cached = localStorage.getItem('qclaw_ref_tree_' + addr);
-    if (cached) return cached;
+    if (cached) {
+        console.log('[QClaw] getReferrer 从缓存读取:', addr, '→', cached);
+        return cached;
+    }
     
     // 从全局 Gist 读取
     try {
         const gistId = localStorage.getItem(GLOBAL_GIST_KEY);
-        if (!gistId) return null;
+        if (!gistId) {
+            console.log('[QClaw] getReferrer 全局Gist不存在');
+            return null;
+        }
         
         const res = await fetch(`https://api.github.com/gists/${gistId}`);
         const data = await res.json();
         const content = data.files['ref_tree.json']?.content || '{}';
         const tree = JSON.parse(content);
+        console.log('[QClaw] getReferrer 从Gist读取:', addr, '→', tree[addr] || 'null');
+        console.log('[QClaw] 全局邀请树:', tree);
         
         // 缓存到 localStorage
         if (tree[addr]) {
@@ -514,18 +522,24 @@ async function getReferrer(addr) {
 
 // 设置某地址的上级邀请人（写入全局 Gist）
 async function setReferrer(addr, referrer) {
+    console.log('[QClaw] setReferrer:', addr, '→', referrer);
+    
     // 缓存到 localStorage
     localStorage.setItem('qclaw_ref_tree_' + addr, referrer);
     
     // 写入全局 Gist
     const token = await loadGistToken();
-    if (!token) return false;
+    if (!token) {
+        console.error('[QClaw] setReferrer token 加载失败');
+        return false;
+    }
     
     try {
         let gistId = localStorage.getItem(GLOBAL_GIST_KEY);
         let tree = {};
         
         if (gistId) {
+            console.log('[QClaw] setReferrer 读取现有Gist:', gistId);
             const res = await fetch(`https://api.github.com/gists/${gistId}`);
             const data = await res.json();
             const content = data.files['ref_tree.json']?.content || '{}';
@@ -533,14 +547,17 @@ async function setReferrer(addr, referrer) {
         }
         
         tree[addr] = referrer;
+        console.log('[QClaw] setReferrer 更新邀请树:', tree);
         
         if (gistId) {
-            await fetch(`https://api.github.com/gists/${gistId}`, {
+            const updateRes = await fetch(`https://api.github.com/gists/${gistId}`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ files: { 'ref_tree.json': { content: JSON.stringify(tree, null, 2) } } })
             });
+            console.log('[QClaw] setReferrer 更新Gist结果:', updateRes.ok);
         } else {
+            console.log('[QClaw] setReferrer 创建新Gist');
             const res = await fetch('https://api.github.com/gists', {
                 method: 'POST',
                 headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
@@ -553,6 +570,7 @@ async function setReferrer(addr, referrer) {
             const data = await res.json();
             if (data.id) {
                 localStorage.setItem(GLOBAL_GIST_KEY, data.id);
+                console.log('[QClaw] setReferrer 创建Gist成功:', data.id);
             }
         }
         return true;
@@ -564,23 +582,33 @@ async function setReferrer(addr, referrer) {
 
 // 追加邀请记录（支持多层级）
 async function appendReferrerGist(refAddr, newAddr) {
+    console.log('[QClaw] appendReferrerGist 开始:', newAddr, '→ ref=', refAddr);
+    
     // 1. 记录 newAddr 的上级邀请人（写入全局 Gist）
-    await setReferrer(newAddr, refAddr);
+    const setRefResult = await setReferrer(newAddr, refAddr);
+    console.log('[QClaw] setReferrer 结果:', setRefResult);
     
     // 2. 追溯整个邀请链，给每个人都加分
     const credited = {};
     let currentReferrer = refAddr;
+    let level = 0;
     
     while (currentReferrer && !credited[currentReferrer]) {
+        level++;
+        console.log('[QClaw] 追溯第', level, '层:', currentReferrer);
         credited[currentReferrer] = true;
         
         // 写入当前邀请人的 Gist
-        await _appendToGist(currentReferrer, newAddr);
+        const appendResult = await _appendToGist(currentReferrer, newAddr);
+        console.log('[QClaw] 写入 Gist 结果:', appendResult);
         
         // 向上追溯（从全局 Gist 读取）
-        currentReferrer = await getReferrer(currentReferrer);
+        const parent = await getReferrer(currentReferrer);
+        console.log('[QClaw] 上级邀请人:', currentReferrer, '→', parent || 'null');
+        currentReferrer = parent;
     }
     
+    console.log('[QClaw] appendReferrerGist 完成，共追溯', level, '层');
     return true;
 }
 
