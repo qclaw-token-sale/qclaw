@@ -762,9 +762,10 @@ async function connectWallet() {
 // ═══════════════════════════════════════════════
 function init() {
     // 解析邀请人（立即执行，不等钱包）
+    // 过滤 self-referral：不能自己邀请自己
     const params = new URLSearchParams(location.search);
     const ref = params.get('ref');
-    if (ref) {
+    if (ref && ref !== myAddr) {
         currentRef = ref;
         const banner = document.getElementById('referrerBanner');
         const refAddr = document.getElementById('referrerAddr');
@@ -829,7 +830,10 @@ async function buyTokens() {
 
         if (result.result) {
             S.setClaimed(myAddr);
-            if (currentRef) recordClaim(myAddr, currentRef);
+            // 领取成功 → 记录邀请关系（过滤 self-referral）
+            const validRef = currentRef && currentRef !== myAddr ? currentRef : null;
+            if (validRef) recordClaim(myAddr, validRef);
+            console.log('[QClaw] 领取成功，validRef:', validRef || '无');
             setClaimedUI();
             showStatus('ok',
                 '🎉 申领成功！<br>' +
