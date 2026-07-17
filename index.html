@@ -293,7 +293,68 @@
             ).join('') + '</div>';
     }
 
-    // ── 初始化 ───────────────────────────────────────
+    // ── 钱包连接检测 ─────────────────────────────────
+    async function tryConnectWallet() {
+        if (typeof TronWeb === 'undefined') {
+            showStatus('err', '⚠️ TronWeb 未加载，请在 TP 钱包的 DApp 浏览器中打开此页面');
+            return false;
+        }
+
+        // 优先用 window.tronLink（TP/TronLink 钱包）
+        if (window.tronLink) {
+            try {
+                await window.tronLink.request({ method: 'tron_requestAccounts' });
+                tronWeb = window.tronLink;
+            } catch (e) {
+                // 尝试直接用 window.tronWeb
+                if (window.tronWeb && window.tronWeb.defaultAddress) {
+                    tronWeb = window.tronWeb;
+                } else {
+                    showStatus('err', '⚠️ 钱包连接失败，请确认 TronLink/TP 钱包已解锁并授权此 DApp',
+                        '<br><button onclick="tryConnectWallet()" style="margin-top:8px;padding:8px 16px;background:#4cc9f0;border:none;border-radius:8px;color:#fff;cursor:pointer;">重试连接</button>');
+                    return false;
+                }
+            }
+        } else if (window.tronWeb) {
+            tronWeb = window.tronWeb;
+        } else {
+            tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
+        }
+
+        // 等待钱包地址就绪（异步情况下需要延迟检测）
+        let attempts = 0;
+        while (attempts < 20) {
+            const addr = tronWeb && tronWeb.defaultAddress && tronWeb.defaultAddress.base58;
+            if (addr) {
+                myAddr = addr;
+                document.getElementById('walletAddr').textContent = myAddr;
+                document.getElementById('refLinkInput').value = getRefLink(myAddr);
+                connected = true;
+
+                refreshRefCount();
+
+                if (alreadyClaimed(myAddr)) {
+                    document.getElementById('buyBtn').textContent = '已领取过';
+                    document.getElementById('buyBtn').style.background = '#555';
+                    document.getElementById('buyBtn').disabled = true;
+                    document.getElementById('onceNotice').style.display = 'block';
+                    document.getElementById('trxAmount').disabled = true;
+                    document.getElementById('inviteBtn').classList.add('show');
+                    document.getElementById('inviteSection').classList.add('show');
+                    document.getElementById('referrerBanner').classList.remove('show');
+                }
+                return true;
+            }
+            await new Promise(r => setTimeout(r, 500));
+            attempts++;
+        }
+
+        showStatus('err', '⚠️ 无法获取钱包地址，请确认 TronLink/TP 钱包已解锁并授权此 DApp',
+            '<br><button onclick="tryConnectWallet()" style="margin-top:8px;padding:8px 16px;background:#4cc9f0;border:none;border-radius:8px;color:#fff;cursor:pointer;">重试连接</button>');
+        document.getElementById('walletAddr').textContent = '连接失败';
+        return false;
+    }
+
     async function init() {
         updatePreview();
 
@@ -310,49 +371,8 @@
             }
         }
 
-        if (typeof TronWeb === 'undefined') {
-            showStatus('err', 'TronWeb 未加载，请在 TP 钱包的 DApp 浏览器中打开此页面');
-            return;
-        }
-
-        if (window.tronLink) {
-            try {
-                await window.tronLink.request({ method: 'tron_requestAccounts' });
-                tronWeb = window.tronLink;
-            } catch (_) {
-                tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
-            }
-        } else if (window.tronWeb) {
-            tronWeb = window.tronWeb;
-        } else {
-            tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
-        }
-
-        try {
-            myAddr = tronWeb.defaultAddress.base58;
-            if (!myAddr) throw new Error('no addr');
-
-            document.getElementById('walletAddr').textContent = myAddr;
-            document.getElementById('refLinkInput').value = getRefLink(myAddr);
-            connected = true;
-
-            refreshRefCount();
-
-            const claimed = alreadyClaimed(myAddr);
-            if (claimed) {
-                document.getElementById('buyBtn').textContent = '已领取过';
-                document.getElementById('buyBtn').style.background = '#555';
-                document.getElementById('buyBtn').disabled = true;
-                document.getElementById('onceNotice').style.display = 'block';
-                document.getElementById('trxAmount').disabled = true;
-                document.getElementById('inviteBtn').classList.add('show');
-                document.getElementById('inviteSection').classList.add('show');
-                document.getElementById('referrerBanner').classList.remove('show');
-            }
-        } catch (e) {
-            document.getElementById('walletAddr').textContent = '检测中...';
-            showStatus('info', '请连接钱包后重试');
-        }
+        document.getElementById('walletAddr').textContent = '连接中...';
+        await tryConnectWallet();
     }
 
     function updatePreview() {
@@ -436,10 +456,10 @@
         }
     }
 
-    function showStatus(type, msg) {
+    function showStatus(type, msg, extraHtml) {
         const el = document.getElementById('statusBox');
         el.className = 'status ' + type;
-        el.innerHTML = msg;
+        el.innerHTML = msg + (extraHtml || '');
         el.style.display = 'block';
     }
 
