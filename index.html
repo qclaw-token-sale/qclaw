@@ -294,45 +294,44 @@
     }
 
     // ── 钱包连接检测 ─────────────────────────────────
+    // TP 钱包专用连接（处理多种地址格式）
     async function tryConnectWallet() {
         if (typeof TronWeb === 'undefined') {
             showStatus('err', '⚠️ TronWeb 未加载，请在 TP 钱包的 DApp 浏览器中打开此页面');
             return false;
         }
 
-        // 优先用 window.tronLink（TP/TronLink 钱包）
-        if (window.tronLink) {
-            try {
-                await window.tronLink.request({ method: 'tron_requestAccounts' });
-                tronWeb = window.tronLink;
-            } catch (e) {
-                // 尝试直接用 window.tronWeb
-                if (window.tronWeb && window.tronWeb.defaultAddress) {
-                    tronWeb = window.tronWeb;
-                } else {
-                    showStatus('err', '⚠️ 钱包连接失败，请确认 TronLink/TP 钱包已解锁并授权此 DApp',
-                        '<br><button onclick="tryConnectWallet()" style="margin-top:8px;padding:8px 16px;background:#4cc9f0;border:none;border-radius:8px;color:#fff;cursor:pointer;">重试连接</button>');
-                    return false;
-                }
-            }
+        // TP 钱包：window.tronLink.tronWeb 是预置好的 tronWeb 实例
+        if (window.tronLink && window.tronLink.tronWeb) {
+            tronWeb = window.tronLink.tronWeb;
+        } else if (window.tronLink) {
+            // 尝试直接用 tronLink
+            try { await window.tronLink.request({ method: 'tron_requestAccounts' }); } catch (_) {}
+            tronWeb = window.tronWeb || window.tronLink;
         } else if (window.tronWeb) {
             tronWeb = window.tronWeb;
         } else {
             tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
         }
 
-        // 等待钱包地址就绪（异步情况下需要延迟检测）
+        // TP 钱包：defaultAddress 可能是 { hex, base58 } 两个都有，也可能只有 hex
         let attempts = 0;
-        while (attempts < 20) {
-            const addr = tronWeb && tronWeb.defaultAddress && tronWeb.defaultAddress.base58;
-            if (addr) {
-                myAddr = addr;
+        while (attempts < 30) {
+            const da = tronWeb && tronWeb.defaultAddress;
+            // base58 格式（标准）
+            let addr = da && (da.base58 || da.hex);
+            // hex 转 base58（如果只有 hex）
+            if (!addr && da && da.hex && da.hex.startsWith('41')) {
+                try {
+                    addr = tronWeb.address.fromHex(da.hex);
+                } catch (_) {}
+            }
+            if (addr && addr !== '41'.padEnd(42, '0') && addr !== '41AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') {
+                myAddr = (addr.length === 34) ? addr : addr; // base58 34位
                 document.getElementById('walletAddr').textContent = myAddr;
                 document.getElementById('refLinkInput').value = getRefLink(myAddr);
                 connected = true;
-
                 refreshRefCount();
-
                 if (alreadyClaimed(myAddr)) {
                     document.getElementById('buyBtn').textContent = '已领取过';
                     document.getElementById('buyBtn').style.background = '#555';
@@ -349,8 +348,12 @@
             attempts++;
         }
 
-        showStatus('err', '⚠️ 无法获取钱包地址，请确认 TronLink/TP 钱包已解锁并授权此 DApp',
-            '<br><button onclick="tryConnectWallet()" style="margin-top:8px;padding:8px 16px;background:#4cc9f0;border:none;border-radius:8px;color:#fff;cursor:pointer;">重试连接</button>');
+        // 调试信息
+        const da = tronWeb && tronWeb.defaultAddress;
+        let debugInfo = '';
+        if (da) debugInfo = '<br><span style="font-size:11px;color:#888;">调试：' + JSON.stringify(da) + '</span>';
+        showStatus('err', '⚠️ 钱包连接失败，请确认 TP 钱包已解锁并在此 DApp 页面点击"授权"',
+            '<br><button onclick="tryConnectWallet()" style="margin-top:8px;padding:8px 16px;background:#4cc9f0;border:none;border-radius:8px;color:#fff;cursor:pointer;">重试连接</button>' + debugInfo);
         document.getElementById('walletAddr').textContent = '连接失败';
         return false;
     }
@@ -402,7 +405,7 @@
             const tx = await tronWeb.transactionBuilder.triggerSmartContract(
                 CONTRACT_HEX, 'claimReward()',
                 { callValue: trxSun, feeLimit: 100_000_000 },
-                [], tronWeb.defaultAddress.hex
+                [], tronWeb.address.toHex(myAddr)
             );
             const signedTx = await tronWeb.trx.sign(tx.transaction);
             result = await tronWeb.trx.sendRawTransaction(signedTx);
