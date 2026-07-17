@@ -423,7 +423,7 @@
 </div>
 
 <!-- TronWeb 异步加载，不阻塞页面渲染 -->
-<script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js" async onerror="TronWebLoaded(false)"></script>
+<script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js"></script>
 <script>
 // ═══════════════════════════════════════════════
 //  常量
@@ -652,38 +652,62 @@ function shareTo(platform) {
 // ═══════════════════════════════════════════════
 //  钱包连接（适配 TP / TronLink / 通用浏览器）
 // ═══════════════════════════════════════════════
-async function connectWallet() {
-    if (typeof TronWeb === 'undefined') {
-        // CDN 还没加载完，等一下再试
-        await new Promise(r => setTimeout(r, 2000));
-        if (typeof TronWeb === 'undefined') {
-            setWalletDot('err', 'TronWeb 加载失败');
-            showStatus('err', '区块链库加载失败，请刷新重试或检查网络');
-            return;
+// 连接状态枚举
+const W = { UNKNOWN: 0, TRYING: 1, OK: 2, ERR: 3 };
+let walletState = W.UNKNOWN;
+
+// 检测一次钱包地址，不等待（同步判断）
+function probeWallet() {
+    // TP 钱包
+    if (window.tronLink) {
+        const tw = window.tronLink.tronWeb || window.tronWeb;
+        if (tw) {
+            const da = tw.defaultAddress;
+            const addr = da && (da.base58 || (da.hex && da.hex.startsWith('41') ? tw.address.fromHex(da.hex) : null));
+            if (addr && addr.length >= 34) return { tronWeb: tw, addr };
         }
     }
+    // 通用
+    if (window.tronWeb) {
+        const da = window.tronWeb.defaultAddress;
+        const addr = da && (da.base58 || (da.hex && da.hex.startsWith('41') ? window.tronWeb.address.fromHex(da.hex) : null));
+        if (addr && addr.length >= 34) return { tronWeb: window.tronWeb, addr };
+    }
+    return null;
+}
 
-    // 优先 TP 钱包
-    if (window.tronLink && window.tronLink.tronWeb) {
-        tronWeb = window.tronLink.tronWeb;
-    } else if (window.tronLink) {
-        try { await window.tronLink.request({ method: 'tron_requestAccounts' }); } catch (_) {}
-        tronWeb = window.tronWeb || window.tronLink;
-    } else if (window.tronWeb) {
-        tronWeb = window.tronWeb;
+// 立即同步检测一次
+function tryConnectNow() {
+    const r = probeWallet();
+    if (!r) return false;
+    myAddr = r.addr;
+    walletReady = true;
+    tronWeb = r.tronWeb;
+    walletState = W.OK;
+    const refInput = document.getElementById('refLinkInput');
+    if (refInput) refInput.value = PAGE_URL + '?ref=' + encodeURIComponent(myAddr);
+    setWalletDot('ok', myAddr);
+    document.getElementById('trxAmount').disabled = false;
+    if (S.claimed(myAddr)) {
+        setClaimedUI();
     } else {
-        tronWeb = new TronWeb(TRONGRID, TRONGRID, TRONGRID);
+        updatePreview();
     }
+    return true;
+}
 
-    for (let i = 0; i < 30; i++) {
-        const da   = tronWeb && tronWeb.defaultAddress;
-        let   addr = da && (da.base58 || da.hex);
-        if (!addr && da && da.hex && da.hex.startsWith('41')) {
-            try { addr = tronWeb.address.fromHex(da.hex); } catch (_) {}
-        }
-        if (addr && addr.length >= 34 && addr !== '41') {
-            myAddr = addr;
+// 异步轮询（慢速，节省资源）
+function startPolling() {
+    if (walletState === W.OK || walletState === W.ERR) return;
+    walletState = W.TRYING;
+    (function poll() {
+        if (walletState !== W.TRYING) return;
+        const r = probeWallet();
+        if (r) {
+            myAddr = r.addr;
             walletReady = true;
+            tronWeb = r.tronWeb;
+            walletState = W.OK;
             const refInput = document.getElementById('refLinkInput');
             if (refInput) refInput.value = PAGE_URL + '?ref=' + encodeURIComponent(myAddr);
             setWalletDot('ok', myAddr);
@@ -695,29 +719,42 @@ async function connectWallet() {
             }
             return;
         }
-        await new Promise(r => setTimeout(r, 500));
-    }
-
-    // 超时
-    const da   = tronWeb && tronWeb.defaultAddress;
-    const hint = da ? JSON.stringify(da) : '';
-    setWalletDot('err', '连接超时');
-    showStatus('err',
-        '⚠️ 钱包连接超时，请确认：<br>' +
-        '① 使用 TP 钱包 / TronLink 的 DApp 浏览器打开<br>' +
-        '② 钱包已解锁并已授权此 DApp<br>' +
-        (hint ? '<br>调试：' + hint : '') +
-        '<br><button class="retry-btn" onclick="connectWallet()">🔄 重试连接</button>'
-    );
-    updatePreview(); // 让按钮显示"连接钱包后领取"
+        setTimeout(poll, 400);
+    })();
 }
 
-// TronWeb CDN 加载失败回调
-function TronWebLoaded(success) {
-    if (!success) {
-        setWalletDot('err', 'TronWeb 加载失败');
-        showStatus('err', '⚠️ 区块链库加载失败，请刷新页面重试');
+// 主动请求授权（触发 TP 钱包弹窗）
+async function connectWallet() {
+    // 先尝试同步检测
+    if (tryConnectNow()) return;
+
+    // TP 钱包：请求授权
+    if (window.tronLink) {
+        try {
+            await window.tronLink.request({ method: 'tron_requestAccounts' });
+        } catch (_) {}
+        if (tryConnectNow()) return;
     }
+
+    // 开始慢速轮询
+    startPolling();
+    updatePreview();
+
+    // 超时 15 秒后报错
+    setTimeout(() => {
+        if (walletState !== W.OK) {
+            walletState = W.ERR;
+            const hint = (tronWeb && tronWeb.defaultAddress) ? JSON.stringify(tronWeb.defaultAddress) : '';
+            setWalletDot('err', '连接超时');
+            showStatus('err',
+                '⚠️ 钱包连接超时，请确认：<br>' +
+                '① 使用 TP 钱包 / TronLink 的 DApp 浏览器打开<br>' +
+                '② 钱包已解锁并已授权此 DApp<br>' +
+                (hint ? '<br>调试：' + hint : '') +
+                '<br><button class="retry-btn" onclick="connectWallet()">🔄 重试连接</button>'
+            );
+        }
+    }, 15000);
 }
 
 // ═══════════════════════════════════════════════
