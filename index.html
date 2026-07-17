@@ -376,15 +376,14 @@
         .direct-list .direct-time { color: #555; font-size: 11px; }
 
         .diag-box {
-            background: #0d1a0d;
-            border: 1px solid #2a5a2a;
+            background: rgba(74,222,128,0.08);
+            border: 1px solid rgba(74,222,128,0.2);
             border-radius: 8px;
-            padding: 10px;
-            font-size: 10px;
-            color: #7cfc7c;
-            font-family: monospace;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #4ade80;
+            text-align: center;
             display: none;
-            word-break: break-all;
             margin-top: 8px;
         }
         .diag-box.show { display: block; }
@@ -636,13 +635,12 @@ function refreshInvite() {
         ).join('');
     }
 
-    // 诊断
+    // 轻量反馈：显示"已刷新"，2秒后消失
     const diag = document.getElementById('diagBox');
-    const c = localStorage.getItem('qclaw_count_' + myAddr) || '[]';
-    const d = localStorage.getItem('qclaw_direct_' + myAddr) || '[]';
-    const r = S.myRef(myAddr) || '无';
-    diag.innerHTML = '全部层级：' + c + '<br>直接邀请：' + d + '<br>我的邀请人：' + r;
+    diag.textContent = '✓ 已刷新';
     diag.classList.add('show');
+    clearTimeout(diag._t);
+    diag._t = setTimeout(() => diag.classList.remove('show'), 2000);
 }
 
 function toggleInvite() {
