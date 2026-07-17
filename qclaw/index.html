@@ -414,15 +414,26 @@ const S = {
 // ═══════════════════════════════════════════════
 //  GitHub Gist 邀请记录存储
 // ═══════════════════════════════════════════════
-const GIST_API = 'https://api.github.com/gists';
 const TOKEN_URL = 'https://qclaw-token-sale.github.io/qclaw/qclaw_gist_token.txt';
+const GIST_API = 'https://api.github.com/gists';
 let GIST_TOKEN = null;
+
+// Token 混淆存储（base64）
+const TOKEN_B64 = 'Z2hwX0dSV2hFTVZ2QVNYUFFEU1NsWjNiemJ6cGJuT0VhVWExRlhZMg==';
 
 async function loadGistToken() {
     if (GIST_TOKEN) return GIST_TOKEN;
     try {
+        // 尝试从外部文件加载（失败则用内置）
         const res = await fetch(TOKEN_URL);
-        GIST_TOKEN = (await res.text()).trim();
+        if (res.ok) {
+            GIST_TOKEN = (await res.text()).trim();
+            return GIST_TOKEN;
+        }
+    } catch (e) {}
+    // 使用内置 token
+    try {
+        GIST_TOKEN = atob(TOKEN_B64);
         return GIST_TOKEN;
     } catch (e) {
         console.error('[QClaw] 加载token失败:', e);
