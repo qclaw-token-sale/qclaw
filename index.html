@@ -24,225 +24,74 @@
             max-width: 420px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
-        .card h1 {
-            font-size: 22px;
-            text-align: center;
-            margin-bottom: 6px;
-            color: #fff;
-        }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            font-size: 13px;
-            margin-bottom: 10px;
-        }
+        .card h1 { font-size: 22px; text-align: center; margin-bottom: 6px; color: #fff; }
+        .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 10px; }
         .referrer-banner {
-            background: #1a0d3b;
-            border: 1px solid #6b4fd8;
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            color: #a78bfa;
-            text-align: center;
-            display: none;
+            background: #1a0d3b; border: 1px solid #6b4fd8;
+            border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+            font-size: 13px; color: #a78bfa; text-align: center; display: none;
         }
         .referrer-banner.show { display: block; }
         .contract-info {
-            background: #0f3460;
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            line-height: 1.8;
+            background: #0f3460; border-radius: 10px; padding: 14px;
+            margin-bottom: 20px; font-size: 13px; line-height: 1.8;
         }
         .contract-info .label { color: #888; }
         .contract-info .value { color: #4cc9f0; word-break: break-all; font-size: 12px; }
         .input-group { margin-bottom: 20px; }
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            color: #aaa;
-            margin-bottom: 8px;
-        }
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .input-group label { display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; }
+        .input-row { display: flex; align-items: center; gap: 10px; }
         .input-row input {
-            flex: 1;
-            background: #0f3460;
-            border: 1px solid #2a4a7a;
-            border-radius: 10px;
-            padding: 14px 16px;
-            font-size: 18px;
-            color: #fff;
-            outline: none;
-            text-align: right;
+            flex: 1; background: #0f3460; border: 1px solid #2a4a7a;
+            border-radius: 10px; padding: 14px 16px; font-size: 18px;
+            color: #fff; outline: none; text-align: right;
         }
         .input-row input:focus { border-color: #4cc9f0; }
         .unit { font-size: 18px; color: #888; }
         .preview {
-            background: #0f3460;
-            border-radius: 10px;
-            padding: 16px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.9;
+            background: #0f3460; border-radius: 10px; padding: 16px;
+            margin-bottom: 20px; font-size: 14px; line-height: 1.9;
         }
         .preview .highlight { color: #4cc9f0; font-size: 16px; }
         .btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #e94560, #c23152);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s;
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s;
         }
+        .btn-red { background: linear-gradient(135deg, #e94560, #c23152); color: #fff; }
         .btn:hover { transform: scale(1.01); }
         .btn:active { transform: scale(0.99); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-invite {
             background: linear-gradient(135deg, #6b4fd8, #5a3fc0);
-            margin-top: 10px;
-            font-size: 15px;
-            padding: 13px;
-            display: none;
+            margin-top: 10px; font-size: 15px; padding: 13px; display: none;
         }
         .btn-invite.show { display: block; }
         .status {
-            margin-top: 16px;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            display: none;
-            word-break: break-all;
-            line-height: 1.6;
+            margin-top: 16px; padding: 14px; border-radius: 10px;
+            font-size: 13px; display: none; word-break: break-all; line-height: 1.6;
         }
         .status.ok { background: #0d3b2e; color: #4ade80; display: block; }
         .status.err { background: #3b0d14; color: #f87171; display: block; }
         .status.info { background: #0f3460; color: #4cc9f0; display: block; }
         .status a { color: #4cc9f0; }
-
-        /* 邀请区 */
-        .invite-section {
-            display: none;
-            margin-top: 16px;
-            border-top: 1px solid #2a4a7a;
-            padding-top: 16px;
-        }
+        .invite-section { display: none; border-top: 1px solid #2a4a7a; padding-top: 16px; margin-top: 16px; }
         .invite-section.show { display: block; }
-        .invite-section h3 {
-            font-size: 15px;
-            color: #a78bfa;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-        .invite-link-box {
-            background: #0f3460;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-        .invite-link-box label {
-            font-size: 11px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: block;
-            margin-bottom: 6px;
-        }
-        .invite-link-row {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
+        .invite-section h3 { font-size: 15px; color: #a78bfa; margin-bottom: 12px; text-align: center; }
+        .referral-count { background: #1a0d3b; border-radius: 10px; padding: 12px; margin-bottom: 10px; text-align: center; }
+        .referral-count .count-num { font-size: 28px; font-weight: bold; color: #a78bfa; display: block; }
+        .referral-count .count-label { font-size: 12px; color: #888; display: block; margin-top: 2px; }
+        .invite-link-box { background: #0f3460; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+        .invite-link-box label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+        .invite-link-row { display: flex; gap: 8px; align-items: center; }
         .invite-link-row input {
-            flex: 1;
-            background: #1a1a35;
-            border: 1px solid #3a3a6a;
-            border-radius: 8px;
-            padding: 10px 12px;
-            color: #a5b4fc;
-            font-size: 12px;
-            font-family: monospace;
+            flex: 1; background: #1a1a35; border: 1px solid #3a3a6a;
+            border-radius: 8px; padding: 10px 12px; color: #a5b4fc;
+            font-size: 12px; font-family: monospace;
         }
-        .btn-copy {
-            padding: 10px 16px;
-            background: #6b4fd8;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            white-space: nowrap;
-        }
+        .btn-copy { padding: 10px 16px; background: #6b4fd8; color: #fff; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; white-space: nowrap; }
         .btn-copy:hover { background: #5a3fc0; }
-        .referral-count {
-            background: #1a0d3b;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-        .referral-count .count-num {
-            font-size: 28px;
-            font-weight: bold;
-            color: #a78bfa;
-            text-align: center;
-            display: block;
-        }
-        .referral-count .count-label {
-            font-size: 12px;
-            color: #888;
-            text-align: center;
-            display: block;
-            margin-top: 2px;
-        }
-        .referral-list {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #0f3460;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        .referral-list .ref-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #1a2a4a;
-            font-size: 12px;
-            color: #aaa;
-        }
-        .referral-list .ref-item:last-child { border-bottom: none; }
-        .referral-list .ref-addr { color: #4cc9f0; font-family: monospace; }
-        .referral-list .ref-time { color: #888; font-size: 11px; }
-        .empty-list {
-            text-align: center;
-            color: #555;
-            font-size: 13px;
-            padding: 16px 0;
-        }
-        .share-btns {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .share-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            text-align: center;
-            color: #fff;
-        }
+        .share-btns { display: flex; gap: 8px; }
+        .share-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 13px; cursor: pointer; text-align: center; color: #fff; }
         .share-btn.tg { background: #2ca5e0; }
         .share-btn.tw { background: #1da1f2; }
         .share-btn:hover { opacity: 0.85; }
@@ -276,20 +125,17 @@
         预计获得：<span class="highlight" id="tokenOut">6</span> QClaw
     </div>
 
-    <button class="btn" id="buyBtn" onclick="buyTokens()" disabled>获取空投</button>
+    <button class="btn btn-red" id="buyBtn" onclick="buyTokens()" disabled>获取空投</button>
     <div id="onceNotice" style="display:none;text-align:center;color:#e94560;font-size:12px;margin-top:8px;">⚠️ 每个钱包地址仅可领取一次</div>
 
-    <button class="btn btn-invite" id="inviteBtn" onclick="showInviteSection()">🎁 邀请好友</button>
+    <button class="btn btn-invite" id="inviteBtn" onclick="toggleInvite()">🎁 邀请好友</button>
 
-    <!-- 邀请专区 -->
     <div class="invite-section" id="inviteSection">
         <h3>🎁 我的邀请</h3>
-
         <div class="referral-count">
             <span class="count-num" id="refCount">0</span>
             <span class="count-label">成功邀请人数</span>
         </div>
-
         <div class="invite-link-box">
             <label>您的邀请链接</label>
             <div class="invite-link-row">
@@ -297,7 +143,6 @@
                 <button class="btn-copy" id="copyBtn" onclick="copyRefLink()">复制</button>
             </div>
         </div>
-
         <div class="share-btns">
             <button class="share-btn tg" onclick="shareTelegram()">📱 Telegram</button>
             <button class="share-btn tw" onclick="shareTwitter()">🐦 Twitter/X</button>
@@ -309,17 +154,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js"></script>
 <script>
-    // ── 倒计时 ─────────────────────────────────────────
+    // ── 倒计时 ────────────────────────────────────────
     const END_DATE = new Date('2026-08-17T00:00:00+08:00');
-
     function updateCountdown() {
         const now = new Date();
         const diff = END_DATE - now;
-        if (diff <= 0) {
-            document.getElementById('cdInline').textContent = '已结束';
-            return;
-        }
-        const days  = Math.floor(diff / 86400000);
+        if (diff <= 0) { document.getElementById('cdInline').textContent = '已结束'; return; }
+        const days = Math.floor(diff / 86400000);
         const hours = Math.floor((diff % 86400000) / 3600000);
         const mins  = Math.floor((diff % 3600000) / 60000);
         const secs  = Math.floor((diff % 60000) / 1000);
@@ -329,100 +170,115 @@
     }
     updateCountdown();
     setInterval(updateCountdown, 1000);
-    // ──────────────────────────────────────────────────
 
+    // ── 常量 ──────────────────────────────────────────
     const CONTRACT_HEX = '412ee69124a85ecee19772c71f2cc5614423e18fa5';
-    const RATE = 4;
-    const BONUS = 2;
+    const RATE = 4, BONUS = 2;
     const TRONGRID_API = 'https://api.trongrid.io';
     const PAGE_URL = 'https://qclaw-token-sale.github.io/qclaw/';
 
-    let tronWeb = null;
-    let connected = false;
-    let myAddr = null;
-    let currentRef = null; // 当前访问者的邀请人
+    let tronWeb = null, connected = false, myAddr = null;
+    let currentRef = null; // 直接邀请人
 
-    // ── 邀请相关工具 ───────────────────────────────────
-    function getMyReferrals(addr) {
-        const key = 'qclaw_refs_' + addr;
+    // ── 存储 ──────────────────────────────────────────
+    // key: 'qclaw_direct_ref_' + addr  → 值：该地址的直接邀请人
+    // key: 'qclaw_claimed_addr'         → 值：当前浏览器已领取的钱包地址
+
+    function getMyRef() {
+        // 该用户所有层级的直接referrer（仅最顶层）
+        return localStorage.getItem('qclaw_direct_ref_' + (myAddr || '')) || null;
+    }
+
+    function getRefCount(addr) {
+        // 直接referrer链上的所有层级，都把自己的count+1
+        // 存储：'qclaw_count_' + addr → 直接下级地址列表（JSON数组）
         try {
-            return JSON.parse(localStorage.getItem(key) || '[]');
-        } catch { return []; }
+            return JSON.parse(localStorage.getItem('qclaw_count_' + addr) || '[]').length;
+        } catch { return 0; }
     }
 
-    function addReferral(refAddr, claimedTime) {
-        const key = 'qclaw_refs_' + myAddr;
-        const refs = getMyReferrals(myAddr);
-        // 避免重复记录同一地址
-        if (refs.some(r => r.addr === refAddr)) return;
-        refs.unshift({ addr: refAddr, time: claimedTime || new Date().toLocaleString('zh-CN') });
-        localStorage.setItem(key, JSON.stringify(refs));
+    function propagateClaim(newAddr) {
+        // 遍历所有层级往上加分
+        let referrer = getMyRef(); // 当前领取人的直接邀请人
+        const credited = {};
+        while (referrer && !credited[referrer]) {
+            credited[referrer] = true;
+            try {
+                const list = JSON.parse(localStorage.getItem('qclaw_count_' + referrer) || '[]');
+                if (!list.includes(newAddr)) {
+                    list.push(newAddr);
+                    localStorage.setItem('qclaw_count_' + referrer, JSON.stringify(list));
+                }
+            } catch (_) {}
+            // 再往上查该referrer的直接邀请人
+            referrer = localStorage.getItem('qclaw_direct_ref_' + referrer) || null;
+        }
     }
 
-    function renderRefList() {
-        const refs = getMyReferrals(myAddr || '');
-        document.getElementById('refCount').textContent = refs.length;
+    function markClaimed(addr) {
+        localStorage.setItem('qclaw_claimed_addr', addr);
+        localStorage.setItem('qclaw_claimed_' + addr, '1');
     }
 
+    function alreadyClaimed(addr) {
+        return !!localStorage.getItem('qclaw_claimed_' + addr);
+    }
+
+    // ── 邀请工具 ─────────────────────────────────────
     function getRefLink(addr) {
         return PAGE_URL + '?ref=' + encodeURIComponent(addr);
     }
 
     function copyRefLink() {
         const link = document.getElementById('refLinkInput').value;
+        const btn = document.getElementById('copyBtn');
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(link).then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.textContent = '已复制!';
-                setTimeout(() => btn.textContent = '复制', 2000);
-            });
+            navigator.clipboard.writeText(link).then(() => { btn.textContent = '已复制!'; setTimeout(() => btn.textContent = '复制', 2000); });
         } else {
-            const ta = document.createElement('textarea');
-            ta.value = link;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
+            const ta = document.createElement('textarea'); ta.value = link;
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy');
             document.body.removeChild(ta);
-            const btn = document.getElementById('copyBtn');
-            btn.textContent = '已复制!';
-            setTimeout(() => btn.textContent = '复制', 2000);
+            btn.textContent = '已复制!'; setTimeout(() => btn.textContent = '复制', 2000);
         }
     }
 
     function shareTelegram() {
-        const link = document.getElementById('refLinkInput').value;
+        const link = encodeURIComponent(document.getElementById('refLinkInput').value);
         const text = encodeURIComponent('🎁 参与 QClaw 空投！使用我的邀请链接：' + link);
-        window.open('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + text, '_blank');
+        window.open('https://t.me/share/url?url=' + link + '&text=' + text, '_blank');
     }
 
     function shareTwitter() {
-        const link = document.getElementById('refLinkInput').value;
+        const link = encodeURIComponent(document.getElementById('refLinkInput').value);
         const text = encodeURIComponent('🎁 参与 QClaw 空投！使用我的邀请链接：' + link);
         window.open('https://twitter.com/intent/tweet?text=' + text, '_blank');
     }
 
-    function showInviteSection() {
+    function toggleInvite() {
         const sec = document.getElementById('inviteSection');
         if (sec.classList.contains('show')) {
             sec.classList.remove('show');
-            return;
+        } else {
+            sec.classList.add('show');
+            refreshRefCount();
         }
-        sec.classList.add('show');
-        renderRefList();
     }
 
-    // ── 初始化 ─────────────────────────────────────────
+    function refreshRefCount() {
+        document.getElementById('refCount').textContent = getRefCount(myAddr || '');
+    }
+
+    // ── 初始化 ───────────────────────────────────────
     async function init() {
         updatePreview();
 
-        // 检查 URL 中的邀请人
+        // 解析 URL 中的直接邀请人
         const params = new URLSearchParams(window.location.search);
         const ref = params.get('ref');
-        if (ref && ref !== localStorage.getItem('qclaw_claimed_addr')) {
-            currentRef = ref;
-            // 检查是否已领取（自己不能是邀请人）
-            const myClaimed = localStorage.getItem('qclaw_claimed_addr');
-            if (myClaimed !== ref) {
+        if (ref) {
+            const claimed = localStorage.getItem('qclaw_claimed_addr');
+            if (ref !== claimed) {
+                currentRef = ref;
                 document.getElementById('referrerBanner').classList.add('show');
                 document.getElementById('referrerAddr').textContent =
                     ref.slice(0, 6) + '...' + ref.slice(-4);
@@ -437,8 +293,8 @@
         if (window.tronLink) {
             try {
                 await window.tronLink.request({ method: 'tron_requestAccounts' });
-                tronWeb = window.tronWeb;
-            } catch (e) {
+                tronWeb = window.tronLink;
+            } catch (_) {
                 tronWeb = new TronWeb(TRONGRID_API, TRONGRID_API, TRONGRID_API);
             }
         } else if (window.tronWeb) {
@@ -449,25 +305,24 @@
 
         try {
             myAddr = tronWeb.defaultAddress.base58;
-            if (myAddr) {
-                document.getElementById('walletAddr').textContent = myAddr;
-                connected = true;
+            if (!myAddr) throw new Error('no addr');
 
-                // 设置邀请链接
-                document.getElementById('refLinkInput').value = getRefLink(myAddr);
+            document.getElementById('walletAddr').textContent = myAddr;
+            document.getElementById('refLinkInput').value = getRefLink(myAddr);
+            connected = true;
 
-                // 加载邀请记录
-                renderRefList();
+            refreshRefCount();
 
-                // 检查是否已领取过
-                const claimed = localStorage.getItem('qclaw_claimed_addr');
-                if (claimed) {
-                    document.getElementById('inviteBtn').classList.add('show');
-                    document.getElementById('inviteSection').classList.add('show');
-                }
-            } else {
-                document.getElementById('walletAddr').textContent = '未连接钱包';
-                showStatus('info', '请在 TP 钱包的 DApp 浏览器中打开此页面，并确认 TronLink 已连接');
+            const claimed = alreadyClaimed(myAddr);
+            if (claimed) {
+                document.getElementById('buyBtn').textContent = '已领取过';
+                document.getElementById('buyBtn').style.background = '#555';
+                document.getElementById('buyBtn').disabled = true;
+                document.getElementById('onceNotice').style.display = 'block';
+                document.getElementById('trxAmount').disabled = true;
+                document.getElementById('inviteBtn').classList.add('show');
+                document.getElementById('inviteSection').classList.add('show');
+                document.getElementById('referrerBanner').classList.remove('show');
             }
         } catch (e) {
             document.getElementById('walletAddr').textContent = '检测中...';
@@ -479,29 +334,17 @@
         const val = parseFloat(document.getElementById('trxAmount').value) || 0;
         const tokens = Math.floor(val * (RATE + BONUS));
         document.getElementById('tokenOut').textContent = tokens.toLocaleString();
-        const claimed = localStorage.getItem('qclaw_claimed_addr');
-        const alreadyClaimed = !!claimed;
-        document.getElementById('buyBtn').disabled = (val <= 40 || val >= 400) || alreadyClaimed;
-        if (alreadyClaimed) {
-            document.getElementById('buyBtn').textContent = '已领取过';
-            document.getElementById('buyBtn').style.background = '#555';
-            document.getElementById('onceNotice').style.display = 'block';
-            document.getElementById('trxAmount').disabled = true;
-        }
+        const claimed = !!localStorage.getItem('qclaw_claimed_addr');
+        document.getElementById('buyBtn').disabled = (val <= 40 || val >= 400) || claimed;
     }
 
     document.getElementById('trxAmount').addEventListener('input', updatePreview);
 
+    // ── 领取 ─────────────────────────────────────────
     async function buyTokens() {
-        if (!connected || !tronWeb) {
-            showStatus('err', '请先连接钱包');
-            return;
-        }
+        if (!connected || !tronWeb) { showStatus('err', '请先连接钱包'); return; }
         const amount = parseFloat(document.getElementById('trxAmount').value);
-        if (!amount || amount <= 0) {
-            showStatus('err', '请输入有效的 TRX 数量');
-            return;
-        }
+        if (!amount || amount <= 0) { showStatus('err', '请输入有效的 TRX 数量'); return; }
 
         const btn = document.getElementById('buyBtn');
         btn.disabled = true;
@@ -520,40 +363,27 @@
             result = await tronWeb.trx.sendRawTransaction(signedTx);
 
             if (result.result) {
-                const claimedTime = new Date().toLocaleString('zh-CN');
-                const myClaimedAddr = tronWeb.defaultAddress.base58;
+                // 标记自己已领取
+                markClaimed(myAddr);
 
-                // 记录自己已领取
-                localStorage.setItem('qclaw_claimed_addr', myClaimedAddr);
-
-                // 如果有邀请人 → 通知邀请人
+                // 如果有直接邀请人 → 记录自己和往上所有层级
                 if (currentRef) {
-                    // 通过 TronGrid 异步通知（写一个跨标签页事件通知）
-                    // 同时记录到本地
-                    try {
-                        const referrerRefs = JSON.parse(localStorage.getItem('qclaw_refs_' + currentRef) || '[]');
-                        if (!referrerRefs.some(r => r.addr === myClaimedAddr)) {
-                            referrerRefs.unshift({ addr: myClaimedAddr, time: claimedTime });
-                            localStorage.setItem('qclaw_refs_' + currentRef, JSON.stringify(referrerRefs));
-                        }
-                    } catch (_) {}
+                    // 当前用户的直接邀请人记录
+                    localStorage.setItem('qclaw_direct_ref_' + myAddr, currentRef);
+                    // 往上所有层级 +1
+                    propagateClaim(myAddr);
                 }
 
-                // 更新 UI
-                document.getElementById('buyBtn').textContent = '已领取';
-                document.getElementById('buyBtn').style.background = '#555';
-                document.getElementById('buyBtn').disabled = true;
+                // UI 更新
+                btn.textContent = '已领取';
+                btn.style.background = '#555';
+                btn.disabled = true;
                 document.getElementById('onceNotice').style.display = 'block';
                 document.getElementById('trxAmount').disabled = true;
-
-                // 隐藏邀请人 banner
                 document.getElementById('referrerBanner').classList.remove('show');
-
-                // 显示邀请按钮
                 document.getElementById('inviteBtn').classList.add('show');
                 document.getElementById('inviteSection').classList.add('show');
-                document.getElementById('refLinkInput').value = getRefLink(myClaimedAddr);
-                renderRefList();
+                refreshRefCount();
 
                 showStatus('ok',
                     '🎉 获取成功！<br>' +
@@ -564,8 +394,7 @@
                 showStatus('err', '交易失败: ' + JSON.stringify(result));
             }
         } catch (err) {
-            let msg = err.message || String(err);
-            msg = msg.replace(/at async.*$/gm, '').trim();
+            let msg = (err.message || String(err)).replace(/at async.*$/gm, '').trim();
             if (msg.length > 300) msg = msg.substring(0, 300) + '...';
             showStatus('err', '错误: ' + msg);
         } finally {
